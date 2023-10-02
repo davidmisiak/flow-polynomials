@@ -1,5 +1,10 @@
+from functools import lru_cache
+from dataclasses import dataclass
+
+
 fset = frozenset
-Edge = set[int]
+Edge = fset[int]
+Edges = tuple[Edge, ...]
 
 
 class GWIE(fset[fset[int]]):
@@ -42,6 +47,7 @@ class FP(dict[GWIE, int]):
         return FP({gwie: count for gwie, count in self.items() if 1 not in map(len, gwie)})
 
 
+@dataclass(frozen=True, unsafe_hash=True)
 class Graph:
     '''
     Represent a k-pole with n vertices.
@@ -49,36 +55,31 @@ class Graph:
     Each edge should connect either two inner vertices or an inner and an outer vertex.
     '''
 
-    def __init__(self, k: int, n: int, outer: list[Edge], inner: list[Edge]):
-        self.k = k
-        self.n = n
-        self.outer = outer
-        self.inner = inner
+    k: int
+    n: int
+    outer: Edges
+    inner: Edges
 
-    def copy(self):
-        return Graph(self.k, self.n, self.outer.copy(), self.inner.copy())
+    def remove_loops(self) -> tuple['Graph', int]:
+        inner, loops = [], 0
+        for e in self.inner:
+            if len(e) > 1:
+                inner.append(e)
+            else:
+                loops += 1
+        return Graph(self.k, self.n, self.outer, tuple(inner)), loops
 
-    def get_fp(self) -> FP:
-        g = self.copy()
+    def pop_inner_edge(self) -> tuple['Graph', Edge]:
+        e = self.inner[-1]
+        g = Graph(self.k, self.n, self.outer, self.inner[:-1])
+        return g, e
 
-        g.inner = [e for e in g.inner if len(e) > 1]
-        loop_factor = 3 ** (len(self.inner) - len(g.inner))
-
-        if g.inner == []:
-            return FP({g.to_GWIE(): loop_factor})
-
-        e = g.inner.pop()
-        fp_removed = g.get_fp()
-        g.merge_vertices(*e)
-        fp_contracted = g.get_fp()
-
-        return (fp_contracted - fp_removed) * loop_factor
-
-    def merge_vertices(self, u: int, v: int):
+    def merge_vertices(self, u: int, v: int) -> 'Graph':
         def _replace(x: int, by: int) -> int:
             return by if x == u else x
-        self.outer = [{_replace(x, v), _replace(y, v)} for (x, y) in self.outer]
-        self.inner = [{_replace(x, v), _replace(y, v)} for (x, y) in self.inner]
+        outer = tuple(Edge({_replace(x, v), _replace(y, v)}) for (x, y) in self.outer)
+        inner = tuple(Edge({_replace(x, v), _replace(y, v)}) for (x, y) in self.inner)
+        return Graph(self.k, self.n, outer, inner)
 
     def to_GWIE(self) -> GWIE:
         result: dict[int, set[int]] = {}
@@ -86,6 +87,21 @@ class Graph:
             u, v = min(u, v), max(u, v)
             result.setdefault(v, set()).add(u)
         return GWIE(fset(fset(s) for s in result.values()))
+
+    @lru_cache
+    def get_fp(self) -> FP:
+        g, loops = self.remove_loops()
+        loop_factor = 3 ** loops
+
+        if len(g.inner) == 0:
+            return FP({g.to_GWIE(): loop_factor})
+
+        g, e = g.pop_inner_edge()
+        fp_removed = g.get_fp()
+        g = g.merge_vertices(*e)
+        fp_contracted = g.get_fp()
+
+        return (fp_contracted - fp_removed) * loop_factor
 
     def plot(self):
         '''Display the graph (in three different layouts). Outer edges are dashed.'''
@@ -118,28 +134,47 @@ class Graph:
         plt.show()
 
 
-g = Graph(
-    4, 8,
-    outer=[{0, 4}, {1, 5}, {2, 6}, {3, 7}],
-    inner=[{4, 5}, {5, 6}, {6, 7}, {7, 4}],
+def make_graph(outer: list[set[int]], inner: list[set[int]]) -> Graph:
+    k = max([min(e) for e in outer], default=0) + 1
+    n = max([max(e) for e in outer + inner], default=0) + 1
+    outer_ = tuple(Edge(e) for e in outer)
+    inner_ = tuple(Edge(e) for e in inner)
+    return Graph(k, n, outer_, inner_)
+
+
+g = make_graph(
+    [{0, 4}, {1, 5}, {2, 6}, {3, 7}],
+    [{4, 5}, {5, 6}, {6, 7}, {7, 4}],
 )
 
-# g = Graph(
-#     3, 10,
-#     outer=[{0, 3}, {1, 4}, {2, 5}],
-#     inner=[{3, 6}, {6, 4}, {4, 7}, {7, 5}, {5, 8}, {8, 3}, {6, 9}, {7, 9}, {8, 9}],
+# g = make_graph(
+#     [{0, 3}, {1, 4}, {2, 5}],
+#     [{3, 6}, {6, 4}, {4, 7}, {7, 5}, {5, 8}, {8, 3}, {6, 9}, {7, 9}, {8, 9}],
 # )
 
-# g = Graph(
-#     0, 10,
-#     outer=[],
-#     inner=[{i, (i+1)%5} for i in range(5)] + [{i, i+5} for i in range(5)] + [{i+5, ((i+1)%5)+5} for i in range(5)]
+# g = make_graph(
+#     [],
+#     [{i, (i+1)%5} for i in range(5)] + [{i, i+5} for i in range(5)] + [{i+5, ((i+1)%5)+5} for i in range(5)]
 # )
 
-# g = Graph(
-#     0, 10,
-#     outer=[],
-#     inner=[{i, (i+1)%5} for i in range(5)] + [{i, i+5} for i in range(5)] + [{i+5, ((i+2)%5)+5} for i in range(5)]
+# g = make_graph(
+#     [],
+#     [{i, (i+1)%5} for i in range(5)] + [{i, i+5} for i in range(5)] + [{i+5, ((i+2)%5)+5} for i in range(5)]
+# )
+
+# g = make_graph(
+#     [{0, 2}, {1, 11}],
+#     [{2, 3}, {2, 4}, {3, 5}, {3, 6}, {4, 7}, {4, 8}, {5, 6}, {7, 8}, {5, 9}, {6, 9}, {7, 10}, {8, 10}, {9, 11}, {10, 11}],
+# )
+
+# g = make_graph(
+#     [{0, 2}, {1, 23}],
+#     [{2, 3}, {2, 4}, {3, 5}, {3, 6}, {4, 7}, {4, 8}, {5, 9}, {5, 10}, {6, 11}, {6, 12}, {7, 13}, {7, 14}, {8, 15}, {8, 16}, {9, 10}, {11, 12}, {13, 14}, {15, 16}, {9, 17}, {10, 17}, {11, 18}, {12, 18}, {13, 19}, {14, 19}, {15, 20}, {16, 20}, {17, 21}, {18, 21}, {19, 22}, {20, 22}, {21, 23}, {22, 23}],
+# )
+
+# g = make_graph(
+#     [{i, i+16} for i in range(8)] + [{i+8, i+16} for i in range(8)],
+#     [{16, 17}, {18, 19}, {20, 21}, {22, 23}]
 # )
 
 fp = g.get_fp()
