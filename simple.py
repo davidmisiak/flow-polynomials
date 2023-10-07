@@ -1,3 +1,4 @@
+from itertools import product
 from functools import lru_cache
 from dataclasses import dataclass
 
@@ -134,6 +135,26 @@ class Graph:
         plt.show()
 
 
+def compute_gwie_counts():
+    import networkx as nx
+
+    for N in range(3, 9):
+        gwies = set()
+        for blueprint in product(range(N, 2*N-2), repeat=N):
+            el = tuple(fset({i, neighbor}) for i, neighbor in enumerate(blueprint))
+            gwie = Graph(N, 2*N, el, ()).to_GWIE()
+            if gwie in gwies:
+                continue
+            nxg = nx.Graph()
+            nxg.add_edges_from(el)
+            nxg.add_edges_from([(i, -1) for i in range(N)])
+            nxg.add_edges_from([(i, (i+1)%N) for i in range(N)])
+            if nx.check_planarity(nxg)[0]:
+                gwies.add(gwie)
+        feas_gwies = sum(1 not in map(len, gwie) for gwie in gwies)
+        print(N, len(gwies)+1+N*(N-1)//2, feas_gwies)
+
+
 def make_graph(outer: list[set[int]], inner: list[set[int]]) -> Graph:
     k = max([min(e) for e in outer], default=0) + 1
     n = max([max(e) for e in outer + inner], default=0) + 1
@@ -181,3 +202,5 @@ fp = g.get_fp()
 print(fp)
 print('\nfeasible-only terms', fp.only_feasible())
 g.plot()
+
+# compute_gwie_counts()
