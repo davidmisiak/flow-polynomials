@@ -1,0 +1,10 @@
+{
+    "tasks": [
+        {
+            "label": "make: build/main_debug",
+            "type": "shell",
+            "command": "make build/main_debug"
+        },
+    ],
+    "version": "2.0.0"
+}
