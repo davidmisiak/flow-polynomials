@@ -262,23 +262,24 @@ private:
 // Uses the basic contraction-deletion recurrence with memoization.
 class NaiveSolver {
 public:
-    NaiveSolver(const Multipole& g) : g_(g) {}
+    NaiveSolver(const Multipole& g, bool use_memo) : g_(g), use_memo_(use_memo) {}
 
     FlowPoly get_flow_poly() {
         vector<edge_t> loops = g_.remove_loops();
         auto result = get_flow_poly_no_loops();
+        cout << "memo size: " << memo_.size() << endl;
         return result * power(3, loops.size());
     }
 
 private:
     FlowPoly get_flow_poly_no_loops() {
-        if (memo_.contains(g_)) {
+        if (use_memo_ && memo_.contains(g_)) {
             return memo_[g_];
         }
 
         if (!g_.has_inner_edge()) {
             auto result = FlowPoly({{g_.to_partition(), 1}});
-            memo_[g_] = result;
+            if (use_memo_) memo_[g_] = result;
             return result;
         }
 
@@ -293,19 +294,20 @@ private:
         g_.add_edge({u, v});
 
         auto result = result_contracted - result_removed;
-        memo_[g_] = result;
+        if (use_memo_) memo_[g_] = result;
         return result;
     }
 
     Multipole g_;
     map<Multipole, FlowPoly> memo_;
+    bool use_memo_;
 };
 
 
 int main() {
     Multipole g;
     cin >> g;
-    FlowPoly fp = NaiveSolver(g).get_flow_poly();
+    FlowPoly fp = NaiveSolver(g, true).get_flow_poly();
     cout << fp << endl;
     cout << fp.only_proper() << endl;
 }
