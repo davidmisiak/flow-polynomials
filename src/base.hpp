@@ -5,13 +5,16 @@
 
 using ll = long long;
 
-// type aliases for easy underlying data structure replacement
+// type aliases for easy experimenting with underlying data structures
+// TODO try other container types
 using vertex_t = int16_t;
 using edge_t = std::set<vertex_t>;
-using neighbors_t = std::multiset<vertex_t>;
-using adjacency_t = std::map<vertex_t, neighbors_t>;
-template <typename K> using partition_set_t = std::set<K>;
-template <typename K, typename V> using flow_poly_map_t = std::map<K, V>;
+using vertex_set_t = std::set<vertex_t>;
+using vertex_mset_t = std::multiset<vertex_t>;
+using adjacency_t = std::map<vertex_t, vertex_mset_t>;
+template <typename K> using partition_t = std::set<K>;
+template <typename K, typename V> using flow_poly_t = std::map<K, V>;
+template <typename K, typename V> using naive_solver_memo_t = std::map<K, V>;
 
 constexpr ll MAX_VERTEX = 60;
 
@@ -34,15 +37,21 @@ ll power(ll x, ll n) {
     return result;
 }
 
-
+// Returns x^0 + x^1 + ... + x^(n-1).
 ll geometric_sum(ll x, ll n) {
-    if (x == 1) return n + 1;
-    return (power(x, n + 1) - 1) / (x - 1);
+    if (x == 1) return n;
+    return (power(x, n) - 1) / (x - 1);
+}
+
+vertex_set_t mset_to_set(const vertex_mset_t& s) {
+    vertex_set_t result;
+    for (vertex_t v : s) result.insert(v);
+    return result;
 }
 
 
 // Partition of vertex set.
-class Partition : public partition_set_t<neighbors_t> {
+class Partition : public partition_t<vertex_set_t> {
 public:
     friend std::ostream& operator<<(std::ostream& os, const Partition& p) {
         for (const auto& s : p) {
@@ -66,26 +75,63 @@ public:
 
 // Flow polynomial expressed as a linear combination of its multipole minors without inner edges
 // (each represented by the corresponding partition of its vertex set).
-class FlowPoly : public flow_poly_map_t<Partition, ll> {
+// TODO prune improper partitions continuously? (somewhere)
+class FlowPoly : public flow_poly_t<Partition, ll> {
 public:
-    FlowPoly operator-(const FlowPoly& other) const {
-        FlowPoly result;
-        for (const auto& [p, count] : *this) {
-            result[p] = count;
-        }
+    FlowPoly& operator+=(const std::pair<Partition, ll>& p) {
+        (*this)[p.first] += p.second;
+        if ((*this)[p.first] == 0) erase(p.first);
+        return *this;
+    }
+
+    FlowPoly& operator-=(const std::pair<Partition, ll>& p) {
+        (*this)[p.first] -= p.second;
+        if ((*this)[p.first] == 0) erase(p.first);
+        return *this;
+    }
+
+    FlowPoly& operator+=(const FlowPoly& other) {
         for (const auto& [p, count] : other) {
-            result[p] -= count;
-            if (result[p] == 0) result.erase(p);
+            (*this)[p] += count;
+            if ((*this)[p] == 0) erase(p);
         }
+        return *this;
+    }
+
+    FlowPoly& operator-=(const FlowPoly& other) {
+        for (const auto& [p, count] : other) {
+            (*this)[p] -= count;
+            if ((*this)[p] == 0) erase(p);
+        }
+        return *this;
+    }
+
+    FlowPoly& operator*=(ll c) {
+        if (c == 0) {
+            clear();
+        } else {
+            for (auto& [p, count] : *this) {
+                count *= c;
+            }
+        }
+        return *this;
+    }
+
+    FlowPoly operator+(const FlowPoly& other) const {
+        FlowPoly result = *this;
+        result += other;
         return result;
     }
 
-    FlowPoly operator*(int k) const {
-        if (k == 0) return FlowPoly();
-        FlowPoly result;
-        for (const auto& [p, count] : *this) {
-            result[p] = count * k;
-        }
+    FlowPoly operator-(const FlowPoly& other) const {
+        FlowPoly result = *this;
+        result -= other;
+        return result;
+    }
+
+    FlowPoly operator*(ll c) const {
+        FlowPoly result = *this;
+        result *= c;
         return result;
     }
 

@@ -5,17 +5,22 @@
 #include "base.hpp"
 
 
+class VertexBackup {
+public:
+    vertex_mset_t outer_neighbors;
+    vertex_mset_t inner_neighbors;
+
+    VertexBackup(const vertex_mset_t& outer_neighbors, const vertex_mset_t& inner_neighbors)
+        : outer_neighbors(outer_neighbors), inner_neighbors(inner_neighbors) {}
+};
+
+
 class ContractionBackup {
 public:
-    neighbors_t outer_neighbors_u;
-    neighbors_t inner_neighbors_u;
-    neighbors_t outer_neighbors_v;
-    neighbors_t inner_neighbors_v;
+    VertexBackup u;
+    VertexBackup v;
 
-    ContractionBackup(const neighbors_t& outer_neighbors_u, const neighbors_t& inner_neighbors_u,
-                      const neighbors_t& outer_neighbors_v, const neighbors_t& inner_neighbors_v)
-        : outer_neighbors_u(outer_neighbors_u), inner_neighbors_u(inner_neighbors_u),
-          outer_neighbors_v(outer_neighbors_v), inner_neighbors_v(inner_neighbors_v) {}
+    ContractionBackup(const VertexBackup& u, const VertexBackup& v) : u(u), v(v) {}
 };
 
 
@@ -56,10 +61,7 @@ public:
         return is;
     }
 
-    vertex_t new_outer_vertex() {
-        if (outer_edges_.empty()) return -1;
-        return outer_edges_.rbegin()->first - 1;
-    }
+    // --- edge operations ---
 
     bool has_edge(const edge_t& e) const {
         vertex_t u = *e.begin();
@@ -68,20 +70,17 @@ public:
         return edges.contains(u) && edges.at(u).contains(v);
     }
 
-    bool has_inner_edge() const {
+    bool has_any_inner_edge() const {
         return !inner_edges_.empty();
     }
 
-    std::set<vertex_t> get_inner_vertices() const { // TODO return type
-        std::set<vertex_t> result; // TODO return type
-        for (const auto& [u, _] : outer_edges_) {
-            if (u < 0) continue;
-            result.insert(u);
-        }
-        for (const auto& [u, _] : inner_edges_) {
-            result.insert(u);
-        }
-        return result;
+    // Returns the pair of vertices with the following property: The second vertex is the largest
+    // vertex with an inner neighbor, and the first vertex is the largest of its inner neighbors.
+    std::pair<vertex_t, vertex_t> get_largest_inner_edge() const {
+        check(has_any_inner_edge());
+        const auto& [v, neighbors] = *inner_edges_.rbegin();
+        vertex_t u = *neighbors.rbegin();
+        return {u, v};
     }
 
     void add_edge(const edge_t& e) {
@@ -107,28 +106,6 @@ public:
         }
     }
 
-    // TODO explain
-    std::pair<neighbors_t, neighbors_t> remove_inner_vertex(vertex_t u) {
-        neighbors_t outer_neighbors = outer_edges_.contains(u) ? outer_edges_[u] : neighbors_t();
-        neighbors_t inner_neighbors = inner_edges_.contains(u) ? inner_edges_[u] : neighbors_t();
-        for (const auto& v : outer_neighbors) {
-            remove_edge({u, v});
-        }
-        for (const auto& v : inner_neighbors) {
-            remove_edge({u, v});
-        }
-        return {outer_neighbors, inner_neighbors};
-    }
-
-    // Returns the pair of edges with the following property: The second vertex is the largest
-    // vertex with an inner neighbor, and the first vertex is the largest of its inner neighbors.
-    std::pair<vertex_t, vertex_t> get_largest_inner_edge() const {
-        check(has_inner_edge());
-        const auto& [v, neighbors] = *inner_edges_.rbegin();
-        vertex_t u = *neighbors.rbegin();
-        return {u, v};
-    }
-
     std::vector<edge_t> remove_loops() {
         std::vector<edge_t> loops;
         for (auto& [u, neighbors] : inner_edges_) {
@@ -141,8 +118,34 @@ public:
         return loops;
     }
 
-    // TODO explain
-    ll get_inner_neighbor_count(vertex_t u) const {
+    // --- vertex operations ---
+
+    vertex_set_t get_inner_vertices() const {
+        vertex_set_t result;
+        for (const auto& [u, _] : outer_edges_) {
+            if (u < 0) continue;
+            result.insert(u);
+        }
+        for (const auto& [u, _] : inner_edges_) {
+            result.insert(u);
+        }
+        return result;
+    }
+
+    vertex_t get_fresh_outer_vertex() {
+        if (outer_edges_.empty()) return -1;
+        return outer_edges_.rbegin()->first - 1;
+    }
+
+    VertexBackup get_vertex_backup(vertex_t u) const {
+        vertex_mset_t outer_neighbors = outer_edges_.contains(u) ? outer_edges_.at(u) : vertex_mset_t();
+        vertex_mset_t inner_neighbors = inner_edges_.contains(u) ? inner_edges_.at(u) : vertex_mset_t();
+        return {outer_neighbors, inner_neighbors};
+    }
+
+    // Returns the number of distinct inner neighbors of an inner vertex.
+    ll get_distinct_inner_neighbor_count(vertex_t u) const {
+        check(u >= 0);
         if (!inner_edges_.contains(u)) return 0;
         ll result = 0;
         vertex_t prev = -1;
@@ -154,23 +157,27 @@ public:
         return result;
     }
 
-    // Contracts a u-v edge, while merging v into u and dropping all emerging loops.
-    // TODO does this assume there are no loops? also elsewhere
+    // Removes vertex and all its edges, and returns the removed edges.
+    VertexBackup remove_vertex(vertex_t u) {
+        VertexBackup backup = get_vertex_backup(u);
+        for (const auto& v : backup.outer_neighbors) {
+            remove_edge({u, v});
+        }
+        for (const auto& v : backup.inner_neighbors) {
+            remove_edge({u, v});
+        }
+        return backup;
+    }
+
+    // Contracts a u-v inner edge, while merging v into u and dropping all emerging loops.
     ContractionBackup contract_edge(vertex_t u, vertex_t v) {
         check(has_edge({u, v}));
-        neighbors_t outer_neighbors_u = outer_edges_.contains(u) ? outer_edges_[u] : neighbors_t();
-        neighbors_t inner_neighbors_u = inner_edges_.contains(u) ? inner_edges_[u] : neighbors_t();
-        neighbors_t outer_neighbors_v = outer_edges_.contains(v) ? outer_edges_[v] : neighbors_t();
-        neighbors_t inner_neighbors_v = inner_edges_.contains(v) ? inner_edges_[v] : neighbors_t();
-        ContractionBackup backup(
-            outer_neighbors_u, inner_neighbors_u,
-            outer_neighbors_v, inner_neighbors_v
-        );
-        for (const auto& w : backup.outer_neighbors_v) {
+        ContractionBackup backup(get_vertex_backup(u), get_vertex_backup(v));
+        for (const auto& w : backup.v.outer_neighbors) {
             remove_edge({v, w});
             add_edge({u, w});
         }
-        for (const auto& w : backup.inner_neighbors_v) {
+        for (const auto& w : backup.v.inner_neighbors) {
             remove_edge({v, w});
             // avoid adding loops
             if (w != u) add_edge({u, w});
@@ -188,19 +195,19 @@ public:
             vertex_t w = *inner_edges_[u].rbegin();
             remove_edge({u, w});
         }
-        for (const auto& w : backup.outer_neighbors_u) add_edge({u, w});
-        for (const auto& w : backup.inner_neighbors_u) add_edge({u, w});
-        for (const auto& w : backup.outer_neighbors_v) add_edge({v, w});
+        for (const auto& w : backup.u.outer_neighbors) add_edge({u, w});
+        for (const auto& w : backup.u.inner_neighbors) add_edge({u, w});
+        for (const auto& w : backup.v.outer_neighbors) add_edge({v, w});
         // avoid adding a u-v edge again
-        for (const auto& w : backup.inner_neighbors_v) if (w != u) add_edge({v, w});
+        for (const auto& w : backup.v.inner_neighbors) if (w != u) add_edge({v, w});
     }
 
     Partition to_partition() const {
-        check(!has_inner_edge());
+        check(!has_any_inner_edge());
         Partition result;
         for (const auto& [u, neighbors] : outer_edges_) {
             if (u < 0) continue;
-            result.insert(neighbors);
+            result.insert(mset_to_set(neighbors));
         }
         return result;
     }
