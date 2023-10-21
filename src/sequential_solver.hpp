@@ -88,6 +88,9 @@ private:
         vertex_t u = queue_.pop();
         VertexBackup backup = g_.remove_vertex(u);
 
+        // contraction/deletion here yields empty flow poly, return early
+        if (backup.outer_neighbors.empty() && backup.inner_neighbors.size() == 1) return {};
+
         vec<vertex_t> tmp_outer_vertices;
         vertex_t prev = -1;
         for (vertex_t v : backup.inner_neighbors) {

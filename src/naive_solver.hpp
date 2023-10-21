@@ -32,6 +32,12 @@ private:
 
         auto [u, v] = g_.get_largest_inner_edge();
 
+        // contraction/deletion here yields empty flow poly, return early
+        auto [v_outer, v_inner] = g_.get_inner_vertex_edge_count(v);
+        if (v_outer == 0 && v_inner == 1) {
+            return FlowPoly();
+        }
+
         // TODO try remove first and contract second
         ContractionBackup backup = g_.contract_edge(u, v);
         ll loops = backup.u.inner_neighbors.count(v) - 1;

@@ -61,17 +61,15 @@ public:
     }
 
     static Multipole read_plantri_disk_triangulation() {
-        // read input
-        uint8_t n;
-        std::cin >> n;
+        // read input, convert to zero-based indexing
+        uint8_t n = std::cin.get();
         vec<vec<vertex_t>> input;
         for (uint8_t i = 0; i < n; i++) {
             vec<vertex_t> neighbors;
             while (true) {
-                uint8_t v;
-                std::cin >> v;
+                uint8_t v = std::cin.get();
                 if (v == 0) break;
-                neighbors.push_back(v);
+                neighbors.push_back(v - 1);
             }
             input.push_back(neighbors);
         }
@@ -80,17 +78,18 @@ public:
         // build outer edges
         for (ll i = 0; i < static_cast<ll>(input[0].size()); i++) {
             vertex_t u = -i-1;
-            vertex_t v = input[0][i] - 2;
+            vertex_t v = input[0][i] - 1;
             edges.push_back({u, v});
         }
         // build inner edges
         for (ll i = 1; i < static_cast<ll>(input.size()); i++) {
             for (ll j = 0; j < static_cast<ll>(input[i].size()); j++) {
-                vertex_t u = i - 2;
-                vertex_t v = input[i][j] - 2;
+                vertex_t u = i - 1;
+                vertex_t v = input[i][j] - 1;
                 if (u <= v) edges.push_back({u, v});
             }
         }
+        // IC(edges);
         return Multipole(edges);
     }
 
@@ -114,6 +113,13 @@ public:
         const auto& [v, neighbors] = *inner_edges_.rbegin();
         vertex_t u = *neighbors.rbegin();
         return {u, v};
+    }
+
+    std::pair<ll, ll> get_inner_vertex_edge_count(vertex_t u) const {
+        check(u >= 0);
+        ll outer_count = outer_edges_.contains(u) ? outer_edges_.at(u).size() : 0;
+        ll inner_count = inner_edges_.contains(u) ? inner_edges_.at(u).size() : 0;
+        return {outer_count, inner_count};
     }
 
     void add_edge(const edge_t& e) {
