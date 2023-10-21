@@ -38,7 +38,6 @@ private:
             return FlowPoly();
         }
 
-        // TODO try remove first and contract second
         ContractionBackup backup = g_.contract_edge(u, v);
         ll loops = backup.u.inner_neighbors.count(v) - 1;
         FlowPoly result = get_flow_poly_no_loops() * power(3, loops);

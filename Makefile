@@ -1,3 +1,5 @@
+# TODO enable sanitizers? only sometimes?
+# GCC_SANITIZER_FLAGS=-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all
 GCC_COMMON_FLAGS=-Wall -Wextra -Werror -pedantic -std=c++20
 PLANTRI_FLAGS=-dhc2m2P
 

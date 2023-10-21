@@ -50,6 +50,8 @@ int main(int argc, char *argv[] ) {
             check(false);
         }
 
+        // TODO to speed up benchmarking, we can radomly (but deterministically) skip some graphs
+
         FlowPoly fp1;
         FlowPoly fp2;
         if (solver_type == NAIVE) {
