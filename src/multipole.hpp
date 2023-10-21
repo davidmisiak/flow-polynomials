@@ -49,11 +49,11 @@ public:
     }
 
     friend std::istream& operator>>(std::istream& is, Multipole& g) {
-        int m;
+        ll m;
         is >> m;
         vec<edge_t> edges;
-        for (int i = 0; i < m; i++) {
-            int u, v;
+        for (ll i = 0; i < m; i++) {
+            ll u, v;
             is >> u >> v;
             edges.push_back({static_cast<vertex_t>(u), static_cast<vertex_t>(v)});
         }
@@ -113,8 +113,8 @@ public:
         }
         vec<edge_t> loops;
         for (vertex_t u : inner_vertices) {
-            size_t c = inner_edges_[u].count(u);
-            for (size_t i = 0; i < c; i++) {
+            ll c = inner_edges_[u].count(u);
+            for (ll i = 0; i < c; i++) {
                 loops.push_back({u});
                 remove_edge({u});
             }

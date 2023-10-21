@@ -3,8 +3,7 @@
 #include <bits/stdc++.h>
 
 
-using ll = long long;
-
+using ll = int64_t;
 template <typename T> using vec = std::vector<T>;
 
 // type aliases for easy experimenting with underlying data structures
@@ -60,7 +59,7 @@ public:
         for (const auto& s : p) {
             os << "[ ";
             for (const auto& v : s) {
-                os << static_cast<int>(v) << " ";
+                os << static_cast<ll>(v) << " ";
             }
             os << "]";
         }
