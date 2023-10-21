@@ -33,7 +33,7 @@ class Multipole {
 public:
     Multipole() {}
 
-    Multipole(const std::vector<edge_t>& edges) {
+    Multipole(const vec<edge_t>& edges) {
         for (const auto& e : edges) {
             vertex_t u = *e.begin();
             vertex_t v = *e.rbegin();
@@ -51,7 +51,7 @@ public:
     friend std::istream& operator>>(std::istream& is, Multipole& g) {
         int m;
         is >> m;
-        std::vector<edge_t> edges;
+        vec<edge_t> edges;
         for (int i = 0; i < m; i++) {
             int u, v;
             is >> u >> v;
@@ -106,10 +106,14 @@ public:
         }
     }
 
-    std::vector<edge_t> remove_loops() {
-        std::vector<edge_t> loops;
-        for (auto& [u, neighbors] : inner_edges_) {
-            size_t c = neighbors.count(u);
+    vec<edge_t> remove_loops() {
+        vec<vertex_t> inner_vertices;
+        for (const auto& [u, _] : inner_edges_) {
+            inner_vertices.push_back(u);
+        }
+        vec<edge_t> loops;
+        for (vertex_t u : inner_vertices) {
+            size_t c = inner_edges_[u].count(u);
             for (size_t i = 0; i < c; i++) {
                 loops.push_back({u});
                 remove_edge({u});
@@ -132,9 +136,9 @@ public:
         return result;
     }
 
-    vertex_t get_fresh_outer_vertex() {
+    vertex_t get_first_unused_outer_vertex() {
         if (outer_edges_.empty()) return -1;
-        return outer_edges_.rbegin()->first - 1;
+        return outer_edges_.begin()->first - 1;
     }
 
     VertexBackup get_vertex_backup(vertex_t u) const {

@@ -5,6 +5,8 @@
 
 using ll = long long;
 
+template <typename T> using vec = std::vector<T>;
+
 // type aliases for easy experimenting with underlying data structures
 // TODO try other container types
 using vertex_t = int16_t;
@@ -15,6 +17,7 @@ using adjacency_t = std::map<vertex_t, vertex_mset_t>;
 template <typename K> using partition_t = std::set<K>;
 template <typename K, typename V> using flow_poly_t = std::map<K, V>;
 template <typename K, typename V> using naive_solver_memo_t = std::map<K, V>;
+template <typename K, typename V, typename C = std::less<K>> using priority_queue_t = std::map<K, V, C>;
 
 constexpr ll MAX_VERTEX = 60;
 

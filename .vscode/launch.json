@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/main_debug",
-            "args": ["<", "${workspaceFolder}/graphs/0-almost-petersen"],
+            "args": ["<", "${workspaceFolder}/graphs/4-bridge"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "make: build/main_debug",
