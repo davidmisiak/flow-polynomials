@@ -48,17 +48,50 @@ public:
         return tie(g1.outer_edges_, g1.inner_edges_) < tie(g2.outer_edges_, g2.inner_edges_);
     }
 
-    friend std::istream& operator>>(std::istream& is, Multipole& g) {
+    static Multipole read_numeric() {
         ll m;
-        is >> m;
+        std::cin >> m;
         vec<edge_t> edges;
         for (ll i = 0; i < m; i++) {
             ll u, v;
-            is >> u >> v;
+            std::cin >> u >> v;
             edges.push_back({static_cast<vertex_t>(u), static_cast<vertex_t>(v)});
         }
-        g = Multipole(edges);
-        return is;
+        return Multipole(edges);
+    }
+
+    static Multipole read_plantri_disk_triangulation() {
+        // read input
+        uint8_t n;
+        std::cin >> n;
+        vec<vec<vertex_t>> input;
+        for (uint8_t i = 0; i < n; i++) {
+            vec<vertex_t> neighbors;
+            while (true) {
+                uint8_t v;
+                std::cin >> v;
+                if (v == 0) break;
+                neighbors.push_back(v);
+            }
+            input.push_back(neighbors);
+        }
+
+        vec<edge_t> edges;
+        // build outer edges
+        for (ll i = 0; i < static_cast<ll>(input[0].size()); i++) {
+            vertex_t u = -i-1;
+            vertex_t v = input[0][i] - 2;
+            edges.push_back({u, v});
+        }
+        // build inner edges
+        for (ll i = 1; i < static_cast<ll>(input.size()); i++) {
+            for (ll j = 0; j < static_cast<ll>(input[i].size()); j++) {
+                vertex_t u = i - 2;
+                vertex_t v = input[i][j] - 2;
+                if (u <= v) edges.push_back({u, v});
+            }
+        }
+        return Multipole(edges);
     }
 
     // --- edge operations ---

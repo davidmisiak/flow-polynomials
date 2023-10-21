@@ -2,6 +2,11 @@
 
 #include <bits/stdc++.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "icecream.hpp"
+#pragma GCC diagnostic pop
+
 
 using ll = int64_t;
 template <typename T> using vec = std::vector<T>;
