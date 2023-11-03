@@ -27,13 +27,13 @@ run: build/main
 test: build/main build/random_test
 	@for file in ./graphs/easy/*; do \
 		output1=$$(python scripts/flow_poly.py < $$file); \
-		output2=$$(./build/main numeric all 0 < $$file); \
+		output2=$$(./build/main numeric all 1 < $$file); \
 		if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi \
 	done
 	@echo
-	@./build/random_test | /bin/time build/main numeric all 0 >$(DN)
+	@./build/random_test | /bin/time build/main numeric all 1 >$(DN)
 	@echo
-	@plantri $(PLANTRI_FLAGS) 14d 2>$(DN) | /bin/time build/main plantri all 0 >$(DN)
+	@plantri $(PLANTRI_FLAGS) 14d 2>$(DN) | /bin/time build/main plantri all 1 >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark: build/main
