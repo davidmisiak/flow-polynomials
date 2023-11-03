@@ -1,6 +1,8 @@
-# TODO enable sanitizers? only sometimes?
-# GCC_SANITIZER_FLAGS=-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all
-GCC_COMMON_FLAGS=-Wall -Wextra -Werror -pedantic -std=c++20
+GCC_SANITIZER_FLAGS=-fsanitize=undefined -fno-sanitize-recover=all
+GCC_COMMON_FLAGS=$(GCC_SANITIZER_FLAGS) -Wall -Wextra -Werror -pedantic -std=c++20
+GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
+GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
+
 PLANTRI_FLAGS=-dhc2m2P
 
 DN=/dev/null
@@ -11,13 +13,13 @@ clean:
 	find build/ -type f ! -name '.gitignore' -delete
 
 build/main: src/*.hpp src/*.cpp
-	g++ $(GCC_COMMON_FLAGS) -O3 -o build/main src/main.cpp
+	g++ $(GCC_FAST_FLAGS) -o build/main src/main.cpp
 
 build/main_debug: src/*.hpp src/*.cpp
-	g++ $(GCC_COMMON_FLAGS) -g -o build/main_debug src/main.cpp
+	g++ $(GCC_DEBUG_FLAGS) -o build/main_debug src/main.cpp
 
 build/random_test: src/*.hpp src/*.cpp
-	g++ $(GCC_COMMON_FLAGS) -O3 -o build/random_test src/random_test.cpp
+	g++ $(GCC_FAST_FLAGS) -o build/random_test src/random_test.cpp
 
 run: build/main
 	/bin/time build/main $(input) $(solver) $(process)
