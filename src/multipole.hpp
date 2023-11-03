@@ -59,7 +59,7 @@ public:
         return Multipole(edges);
     }
 
-    static Multipole read_plantri_disk_triangulation() {
+    static Multipole read_plantri_disk_triangulation(bool ignored = false) {
         // read input, convert to zero-based indexing
         uint8_t n = std::cin.get();
         vec<vec<vertex_t>> input;
@@ -72,6 +72,8 @@ public:
             }
             input.push_back(neighbors);
         }
+
+        if (ignored) return Multipole();
 
         vec<Edge> edges;
         // build outer edges

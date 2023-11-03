@@ -17,6 +17,8 @@ enum SolverType {
 };
 
 int main(int argc, char *argv[] ) {
+    std::ios::sync_with_stdio(false);
+
     check(argc == 4);
 
     InputType input_type = NUMERIC;
@@ -51,16 +53,22 @@ int main(int argc, char *argv[] ) {
     while (std::cin.peek() != EOF) {
         count++;
 
+        bool skip = process_freq == 0 || (count % process_freq) != 0;
+
         Multipole g;
         if (input_type == NUMERIC) {
             g = Multipole::read_numeric();
         } else if (input_type == PLANTRI) {
-            g = Multipole::read_plantri_disk_triangulation();
+            g = Multipole::read_plantri_disk_triangulation(skip);
         } else {
             check(false);
         }
 
-        if (process_freq == 0 || (count % process_freq) != 0) continue;
+        if (input_type == NUMERIC) {
+            std::cin >> std::ws;
+        }
+
+        if (skip) continue;
 
         FlowPoly fp1;
         FlowPoly fp2;
@@ -77,10 +85,6 @@ int main(int argc, char *argv[] ) {
         }
         std::cout << fp1 << std::endl;
         std::cout << fp1.only_proper() << std::endl;
-
-        if (input_type == NUMERIC) {
-            std::cin >> std::ws;
-        }
     }
     std::cerr << "Processed " << count << " graphs" << std::endl;
 }
