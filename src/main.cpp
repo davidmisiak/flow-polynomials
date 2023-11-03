@@ -17,7 +17,7 @@ enum SolverType {
 };
 
 int main(int argc, char *argv[] ) {
-    check(argc == 3);
+    check(argc == 4);
 
     InputType input_type = NUMERIC;
     if (strcmp(argv[1], "numeric") == 0) {
@@ -39,8 +39,18 @@ int main(int argc, char *argv[] ) {
         check(false);
     }
 
+    // processing frequency:
+    //   0 = process nothing
+    //   1 = process everything
+    //   2 = process every other graph
+    //   3 = process every third graph
+    //   ...
+    ll process_freq = std::stoull(argv[3]);
+
     ll count = 0;
     while (std::cin.peek() != EOF) {
+        count++;
+
         Multipole g;
         if (input_type == NUMERIC) {
             g = Multipole::read_numeric();
@@ -50,7 +60,7 @@ int main(int argc, char *argv[] ) {
             check(false);
         }
 
-        // TODO to speed up benchmarking, we can radomly (but deterministically) skip some graphs
+        if (process_freq == 0 || (count % process_freq) != 0) continue;
 
         FlowPoly fp1;
         FlowPoly fp2;
@@ -67,8 +77,6 @@ int main(int argc, char *argv[] ) {
         }
         std::cout << fp1 << std::endl;
         std::cout << fp1.only_proper() << std::endl;
-
-        count++;
 
         if (input_type == NUMERIC) {
             std::cin >> std::ws;

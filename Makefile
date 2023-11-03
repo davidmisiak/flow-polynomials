@@ -20,21 +20,21 @@ build/random_test: src/*.hpp src/*.cpp
 	g++ $(GCC_COMMON_FLAGS) -O3 -o build/random_test src/random_test.cpp
 
 run: build/main
-	/bin/time build/main $(input) $(solver)
+	/bin/time build/main $(input) $(solver) $(process)
 
 test: build/main build/random_test
 	@for file in ./graphs/easy/*; do \
 		output1=$$(python scripts/flow_poly.py < $$file); \
-		output2=$$(./build/main numeric all < $$file); \
+		output2=$$(./build/main numeric all 0 < $$file); \
 		if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi \
 	done
 	@echo
-	@./build/random_test | /bin/time build/main numeric all >$(DN)
+	@./build/random_test | /bin/time build/main numeric all 0 >$(DN)
 	@echo
-	@plantri $(PLANTRI_FLAGS) 14d 2>$(DN) | /bin/time build/main plantri all >$(DN)
+	@plantri $(PLANTRI_FLAGS) 14d 2>$(DN) | /bin/time build/main plantri all 0 >$(DN)
 
-# `nk` is the number of inner and outer vertices (n+k)
+# `v` is the number of inner and outer vertices (n+k)
 benchmark: build/main
-	@plantri $(PLANTRI_FLAGS) $$(($(nk)-2))d 2>$(DN) | /bin/time build/main plantri naive >$(DN)
+	@plantri $(PLANTRI_FLAGS) $$(($(v)-2))d 2>$(DN) | /bin/time build/main plantri naive $(process) >$(DN)
 	@echo
-	@plantri $(PLANTRI_FLAGS) $$(($(nk)-2))d 2>$(DN) | /bin/time build/main plantri sequential >$(DN)
+	@plantri $(PLANTRI_FLAGS) $$(($(v)-2))d 2>$(DN) | /bin/time build/main plantri sequential $(process) >$(DN)
