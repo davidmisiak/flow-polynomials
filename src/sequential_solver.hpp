@@ -67,7 +67,7 @@ public:
     SequentialSolver(const Multipole& g) : g_(g) {}
 
     FlowPoly get_flow_poly() {
-        vec<edge_t> loops = g_.remove_loops();
+        vec<Edge> loops = g_.remove_loops();
 
         for (vertex_t u : g_.get_inner_vertices()) {
             ll priority = g_.get_distinct_inner_neighbor_count(u);

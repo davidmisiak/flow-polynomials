@@ -14,7 +14,6 @@ template <typename T> using vec = std::vector<T>;
 // type aliases for easy experimenting with underlying data structures
 // TODO try other container types
 using vertex_t = int16_t;
-using edge_t = std::set<vertex_t>;
 using vertex_set_t = std::set<vertex_t>;
 using vertex_mset_t = std::multiset<vertex_t>;
 using adjacency_t = std::map<vertex_t, vertex_mset_t>;
@@ -55,6 +54,24 @@ vertex_set_t mset_to_set(const vertex_mset_t& s) {
     for (vertex_t v : s) result.insert(v);
     return result;
 }
+
+
+// The vertices can be given in any order, but are always stored and returned in sorted order.
+class Edge {
+public:
+    Edge(vertex_t u, vertex_t v) {
+        vertices_ = std::minmax(u, v);
+    }
+
+    auto operator<=>(const Edge& other) const = default;
+
+    vertex_t u() const { return vertices_.first; }
+    vertex_t v() const { return vertices_.second; }
+    std::pair<vertex_t, vertex_t> get() const { return vertices_; }
+
+private:
+    std::pair<vertex_t, vertex_t> vertices_;
+};
 
 
 // Partition of vertex set.

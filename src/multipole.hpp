@@ -33,10 +33,9 @@ class Multipole {
 public:
     Multipole() {}
 
-    Multipole(const vec<edge_t>& edges) {
+    Multipole(const vec<Edge>& edges) {
         for (const auto& e : edges) {
-            vertex_t u = *e.begin();
-            vertex_t v = *e.rbegin();
+            auto [u, v] = e.get();
             check(u >= -MAX_VERTEX);
             check(v >= 0);
             check(v <= MAX_VERTEX);
@@ -51,7 +50,7 @@ public:
     static Multipole read_numeric() {
         ll m;
         std::cin >> m;
-        vec<edge_t> edges;
+        vec<Edge> edges;
         for (ll i = 0; i < m; i++) {
             ll u, v;
             std::cin >> u >> v;
@@ -74,7 +73,7 @@ public:
             input.push_back(neighbors);
         }
 
-        vec<edge_t> edges;
+        vec<Edge> edges;
         // build outer edges
         for (ll i = 0; i < static_cast<ll>(input[0].size()); i++) {
             vertex_t u = -i-1;
@@ -95,9 +94,8 @@ public:
 
     // --- edge operations ---
 
-    bool has_edge(const edge_t& e) const {
-        vertex_t u = *e.begin();
-        vertex_t v = *e.rbegin();
+    bool has_edge(const Edge& e) const {
+        auto [u, v] = e.get();
         const adjacency_t& edges = u < 0 ? outer_edges_ : inner_edges_;
         return edges.contains(u) && edges.at(u).contains(v);
     }
@@ -122,9 +120,8 @@ public:
         return {outer_count, inner_count};
     }
 
-    void add_edge(const edge_t& e) {
-        vertex_t u = *e.begin();
-        vertex_t v = *e.rbegin();
+    void add_edge(const Edge& e) {
+        auto [u, v] = e.get();
         adjacency_t& edges = u < 0 ? outer_edges_ : inner_edges_;
         edges[u].insert(v);
         if (u != v) {
@@ -132,10 +129,9 @@ public:
         }
     }
 
-    void remove_edge(const edge_t& e) {
+    void remove_edge(const Edge& e) {
         check(has_edge(e));
-        vertex_t u = *e.begin();
-        vertex_t v = *e.rbegin();
+        auto [u, v] = e.get();
         adjacency_t& edges = u < 0 ? outer_edges_ : inner_edges_;
         edges[u].erase(edges[u].find(v));
         if (edges[u].empty()) edges.erase(u);
@@ -145,17 +141,18 @@ public:
         }
     }
 
-    vec<edge_t> remove_loops() {
+    vec<Edge> remove_loops() {
         vec<vertex_t> inner_vertices;
         for (const auto& [u, _] : inner_edges_) {
             inner_vertices.push_back(u);
         }
-        vec<edge_t> loops;
+        vec<Edge> loops;
         for (vertex_t u : inner_vertices) {
             ll c = inner_edges_[u].count(u);
+            Edge e(u, u);
             for (ll i = 0; i < c; i++) {
-                loops.push_back({u});
-                remove_edge({u});
+                loops.push_back(e);
+                remove_edge(e);
             }
         }
         return loops;

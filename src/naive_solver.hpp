@@ -12,7 +12,7 @@ public:
     NaiveSolver(const Multipole& g, bool use_memo) : g_(g), use_memo_(use_memo) {}
 
     FlowPoly get_flow_poly() {
-        vec<edge_t> loops = g_.remove_loops();
+        vec<Edge> loops = g_.remove_loops();
         FlowPoly result = get_flow_poly_no_loops();
         // std::cout << "memo size: " << memo_.size() << std::endl;
         return result * power(3, loops.size());
