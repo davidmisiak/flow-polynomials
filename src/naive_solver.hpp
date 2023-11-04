@@ -14,8 +14,9 @@ public:
     FlowPoly get_flow_poly() {
         vec<Edge> loops = g_.remove_loops();
         FlowPoly result = get_flow_poly_no_loops();
+        result *= power(3, loops.size());
         // std::cout << "memo size: " << memo_.size() << std::endl;
-        return result * power(3, loops.size());
+        return result;
     }
 
 private:
@@ -40,7 +41,8 @@ private:
 
         ContractionBackup backup = g_.contract_edge(u, v);
         ll loops = backup.u.inner_neighbors.count(v) - 1;
-        FlowPoly result = get_flow_poly_no_loops() * power(3, loops);
+        FlowPoly result = get_flow_poly_no_loops();
+        result *= power(3, loops);
         g_.uncontract_edge(u, v, backup);
 
         g_.remove_edge({u, v});

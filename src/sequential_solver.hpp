@@ -75,8 +75,9 @@ public:
         }
         next_outer_vertex_ = g_.get_first_unused_outer_vertex();
 
-        auto result = get_flow_poly_no_loops();
-        return result * power(3, loops.size());
+        FlowPoly result = get_flow_poly_no_loops();
+        result *= power(3, loops.size());
+        return result;
     }
 
 private:
@@ -107,7 +108,9 @@ private:
         vertex_set_t new_s_base = mset_to_set(backup.outer_neighbors);
         FlowPoly result;
         for (const auto& [p, coef] : subresult) {
-            result += process_subresult_partition(p, new_s_base, tmp_outer_vertices) * coef;
+            FlowPoly contribution = process_subresult_partition(p, new_s_base, tmp_outer_vertices);
+            contribution *= coef;
+            result += contribution;
         }
         return result;
     }

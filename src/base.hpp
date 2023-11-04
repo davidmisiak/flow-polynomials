@@ -102,7 +102,6 @@ public:
 // (each represented by the corresponding partition of its vertex set).
 class FlowPoly : public flow_poly_t<Partition, ll> {
 public:
-    // TODO optimize the operations?
     FlowPoly& operator+=(const FlowPoly& other) {
         for (const auto& [p, count] : other) {
             (*this)[p] += count;
@@ -128,24 +127,6 @@ public:
             }
         }
         return *this;
-    }
-
-    FlowPoly operator+(const FlowPoly& other) const {
-        FlowPoly result = *this;
-        result += other;
-        return result;
-    }
-
-    FlowPoly operator-(const FlowPoly& other) const {
-        FlowPoly result = *this;
-        result -= other;
-        return result;
-    }
-
-    FlowPoly operator*(ll c) const {
-        FlowPoly result = *this;
-        result *= c;
-        return result;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const FlowPoly& fp) {
