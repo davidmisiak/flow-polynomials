@@ -1,11 +1,17 @@
+# gcc:
 GCC_SANITIZER_FLAGS=-fsanitize=undefined -fno-sanitize-recover=all
 GCC_COMMON_FLAGS=$(GCC_SANITIZER_FLAGS) -Wall -Wextra -Werror -pedantic -std=c++20
 GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
 GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 
+# shortcuts:
 PLANTRI=plantri -dhc2m2P
 MAIN=/bin/time build/main
 DN=/dev/null
+
+# defaults:
+res=0
+mod=1
 
 .PHONY: clean run test benchmark mods
 
@@ -39,11 +45,11 @@ test: build/main build/random_test
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark: build/main
-	@$(PLANTRI) $$(($(v)-2))d 0/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
 	@echo
-	@$(PLANTRI) $$(($(v)-2))d 0/$(mod) 2>$(DN) | $(MAIN) plantri sequential >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri sequential >$(DN)
 
 mods:
-	@for mod in 1000000 100000 10000 1000 100 10 1; do \
+	@for mod in 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
 		$(PLANTRI) $$(($(v)-2))d 0/$$mod >$(DN); \
 	done
