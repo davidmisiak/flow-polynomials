@@ -42,7 +42,7 @@ class FlowPoly(dict[Partition, int]):
         items = sorted(self.items(), key=lambda x: x[0].to_sorted())
         return '[\n' + ''.join(f'{count:4d} * {p}\n' for p, count in items) + ']'
 
-    def only_feasible(self) -> 'FlowPoly':
+    def prune(self) -> 'FlowPoly':
         '''Remove multipoles that can not be compatible with any boundary value.'''
         return FlowPoly({p: count for p, count in self.items() if 1 not in map(len, p)})
 
@@ -127,5 +127,5 @@ class Multipole:
 if __name__ == '__main__':
     g = Multipole.read()
     fp = g.get_flow_poly()
-    print(fp)
-    print(fp.only_feasible())
+    # print(fp)
+    print(fp.prune())

@@ -73,7 +73,7 @@ public:
             input.push_back(neighbors);
         }
 
-        if (ignored) return Multipole();
+        if (ignored) return {};
 
         vec<Edge> edges;
         // build outer edges

@@ -67,12 +67,16 @@ int main(int argc, char *argv[] ) {
         } else if (solver_type == ALL) {
             fp1 = NaiveSolver(g, true).get_flow_poly();
             fp2 = SequentialSolver(g).get_flow_poly();
+            if (PRUNE_CONTINUOUSLY) {
+                check(fp1 == fp1.prune());
+                check(fp2 == fp2.prune());
+            }
             check(fp1 == fp2);
         } else {
             check(false);
         }
-        std::cout << fp1 << std::endl;
-        std::cout << fp1.only_proper() << std::endl;
+        // std::cout << fp1 << std::endl;
+        std::cout << fp1.prune() << std::endl;
     }
     std::cerr << "Processed " << count << " graphs" << std::endl;
 }

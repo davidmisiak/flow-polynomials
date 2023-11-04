@@ -23,6 +23,7 @@ template <typename K, typename V> using naive_solver_memo_t = std::map<K, V>;
 template <typename K, typename V, typename C = std::less<K>> using priority_queue_t = std::map<K, V, C>;
 
 constexpr ll MAX_VERTEX = 60;
+constexpr bool PRUNE_CONTINUOUSLY = true;
 
 
 void check(bool cond) {
@@ -99,21 +100,9 @@ public:
 
 // Flow polynomial expressed as a linear combination of its multipole minors without inner edges
 // (each represented by the corresponding partition of its vertex set).
-// TODO prune improper partitions continuously? (somewhere)
 class FlowPoly : public flow_poly_t<Partition, ll> {
 public:
-    FlowPoly& operator+=(const std::pair<Partition, ll>& p) {
-        (*this)[p.first] += p.second;
-        if ((*this)[p.first] == 0) erase(p.first);
-        return *this;
-    }
-
-    FlowPoly& operator-=(const std::pair<Partition, ll>& p) {
-        (*this)[p.first] -= p.second;
-        if ((*this)[p.first] == 0) erase(p.first);
-        return *this;
-    }
-
+    // TODO optimize the operations?
     FlowPoly& operator+=(const FlowPoly& other) {
         for (const auto& [p, count] : other) {
             (*this)[p] += count;
@@ -169,7 +158,7 @@ public:
     }
 
     // Remove multipoles that can not be compatible with any boundary value.
-    FlowPoly only_proper() const {
+    FlowPoly prune() const {
         FlowPoly result;
         for (const auto& [p, count] : *this) {
             if (p.is_proper()) result[p] = count;
@@ -177,3 +166,8 @@ public:
         return result;
     }
 };
+
+FlowPoly prune_if_enabled(const Partition& p, ll count) {
+    if (PRUNE_CONTINUOUSLY && !p.is_proper()) return {};
+    return {{{p, count}}};
+}

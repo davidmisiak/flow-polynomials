@@ -82,7 +82,7 @@ public:
 private:
     FlowPoly get_flow_poly_no_loops() {
         if (!g_.has_any_inner_edge()) {
-            return FlowPoly({{g_.to_partition(), 1}});
+            return prune_if_enabled(g_.to_partition(), 1);
         }
 
         vertex_t u = queue_.pop();
@@ -118,8 +118,6 @@ private:
     // a set in the partition is sufficient (the coefficients are then computed using the geometric
     // sum formula).
     FlowPoly process_subresult_partition(const Partition& p, const vertex_set_t& new_s_base, const vec<vertex_t>& tmp_outer_vertices) {
-        FlowPoly result;
-
         Partition new_p_base;  // sets with no tmp vertices
         vec<vertex_set_t> cleared_p_rest;  // sets that had tmp vertices, but now cleared of them
         vec<ll> tmp_counts;  // counts of tmp vertices cleared from cleared_p_rest
@@ -133,12 +131,17 @@ private:
             }
             if (tmp_count == 0) {
                 new_p_base.insert(s);
+            } else if (tmp_count == 1 && s.empty()) {
+                // contraction/deletion here yields empty flow poly, return early
+                // (though this is never reached if PRUNE_CONTINUOUSLY is true)
+                return {};
             } else {
                 cleared_p_rest.push_back(s);
                 tmp_counts.push_back(tmp_count);
             }
         }
 
+        FlowPoly result;
         ll max_mask = (1 << cleared_p_rest.size());
         for (ll contraction_mask = 0; contraction_mask < max_mask; contraction_mask++) {
             Partition new_p = new_p_base;
@@ -158,12 +161,12 @@ private:
             if (!new_s.empty()) new_p.insert(new_s);
             ll removed_parity = tmp_outer_vertices.size() - contracted_count;
             if (removed_parity % 2 == 1) coef *= -1;
-            result += {new_p, coef};
+            result += prune_if_enabled(new_p, coef);
         }
         return result;
     }
 
     Multipole g_;
-    PriorityQueue queue_; // TODO also take into account outer neighbors?
+    PriorityQueue queue_; // TODO also take into account outer neighbors? (subtract from inner?)
     vertex_t next_outer_vertex_;
 };
