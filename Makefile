@@ -3,11 +3,11 @@ GCC_COMMON_FLAGS=$(GCC_SANITIZER_FLAGS) -Wall -Wextra -Werror -pedantic -std=c++
 GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
 GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 
-PLANTRI_FLAGS=-dhc2m2P
-
+PLANTRI=plantri -dhc2m2P
+MAIN=/bin/time build/main
 DN=/dev/null
 
-.PHONY: clean run test benchmark
+.PHONY: clean run test benchmark mods
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -22,21 +22,28 @@ build/random_test: src/*.hpp src/*.cpp
 	g++ $(GCC_FAST_FLAGS) -o build/random_test src/random_test.cpp
 
 run: build/main
-	/bin/time build/main $(input) $(solver) $(process)
+	$(MAIN) $(input) $(solver)
 
 test: build/main build/random_test
 	@for file in ./graphs/easy/*; do \
 		output1=$$(python scripts/flow_poly.py < $$file); \
-		output2=$$(./build/main numeric all 1 < $$file); \
+		output2=$$(./build/main numeric all < $$file); \
 		if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi \
 	done
 	@echo
-	@./build/random_test | /bin/time build/main numeric all 1 >$(DN)
+	@./build/random_test | $(MAIN) numeric all >$(DN)
 	@echo
-	@plantri $(PLANTRI_FLAGS) 14d 2>$(DN) | /bin/time build/main plantri all 1 >$(DN)
+	@$(PLANTRI) 14d 2>$(DN) | $(MAIN) plantri all >$(DN)
+	@echo
+	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark: build/main
-	@plantri $(PLANTRI_FLAGS) $$(($(v)-2))d 2>$(DN) | /bin/time build/main plantri naive $(process) >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d 0/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
 	@echo
-	@plantri $(PLANTRI_FLAGS) $$(($(v)-2))d 2>$(DN) | /bin/time build/main plantri sequential $(process) >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d 0/$(mod) 2>$(DN) | $(MAIN) plantri sequential >$(DN)
+
+mods:
+	@for mod in 1000000 100000 10000 1000 100 10 1; do \
+		$(PLANTRI) $$(($(v)-2))d 0/$$mod >$(DN); \
+	done
