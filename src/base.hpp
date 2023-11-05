@@ -2,6 +2,9 @@
 
 #include <bits/stdc++.h>
 
+#include <boost/container/flat_set.hpp>
+#include <boost/container/flat_map.hpp>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "icecream.hpp"
@@ -12,15 +15,13 @@ using ll = int64_t;
 template <typename T> using vec = std::vector<T>;
 template <typename T, typename U> using pair = std::pair<T, U>;
 
-// type aliases for easy experimenting with underlying data structures
-// TODO try other container types
+// type aliases (for easy experimenting with the underlying data structures):
 using vertex_t = int16_t;
-using vertex_set_t = std::set<vertex_t>;
-using vertex_mset_t = std::multiset<vertex_t>;
+using vertex_set_t = boost::container::flat_set<vertex_t>;
+using vertex_mset_t = boost::container::flat_multiset<vertex_t>;
 using adjacency_t = std::map<vertex_t, vertex_mset_t>;
-template <typename K> using partition_t = std::set<K>;
+template <typename K> using partition_t = boost::container::flat_set<K>;
 template <typename K, typename V> using flow_poly_t = std::map<K, V>;
-template <typename K, typename V> using naive_solver_memo_t = std::map<K, V>;
 
 // constants:
 constexpr ll MAX_VERTEX = 60;

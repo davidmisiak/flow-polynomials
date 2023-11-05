@@ -54,6 +54,6 @@ private:
     }
 
     Multipole g_;
-    naive_solver_memo_t<Multipole, FlowPoly> memo_;
+    std::map<Multipole, FlowPoly> memo_;
     bool use_memo_;
 };
