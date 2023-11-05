@@ -13,7 +13,7 @@ DN=/dev/null
 res=0
 mod=1
 
-.PHONY: clean run test benchmark mods
+.PHONY: clean run test benchmark_naive benchmark_seq mods
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -44,10 +44,12 @@ test: build/main build/random_test
 	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
-benchmark: build/main
+benchmark_naive: build/main
 	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
-	@echo
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri sequential >$(DN)
+
+# `v` is the number of inner and outer vertices (n+k)
+benchmark_seq: build/main
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq >$(DN)
 
 mods:
 	@for mod in 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \

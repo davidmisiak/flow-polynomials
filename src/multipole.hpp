@@ -162,6 +162,15 @@ public:
 
     // --- vertex operations ---
 
+    vertex_set_t get_outer_vertices() const {
+        vertex_set_t result;
+        for (const auto& [u, _] : outer_edges_) {
+            if (u >= 0) continue;
+            result.insert(u);
+        }
+        return result;
+    }
+
     vertex_set_t get_inner_vertices() const {
         vertex_set_t result;
         for (const auto& [u, _] : outer_edges_) {
