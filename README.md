@@ -2,12 +2,17 @@
 
 ## Dependencies
 
+C++:
+
+- `make`
+- `gcc`
+- `Boost`
+
+Enumerating graphs:
+
+- `plantri`
+
 Python scripts:
 
 - [NetworkX](https://networkx.org/)
 - [Matplotlib](https://matplotlib.org/)
-
-C++:
-
-- `make`
-- `g++`
