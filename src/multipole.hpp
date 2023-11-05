@@ -108,14 +108,14 @@ public:
 
     // Returns the pair of vertices with the following property: The second vertex is the largest
     // vertex with an inner neighbor, and the first vertex is the largest of its inner neighbors.
-    std::pair<vertex_t, vertex_t> get_largest_inner_edge() const {
+    pair<vertex_t, vertex_t> get_largest_inner_edge() const {
         check(has_any_inner_edge());
         const auto& [v, neighbors] = *inner_edges_.rbegin();
         vertex_t u = *neighbors.rbegin();
         return {u, v};
     }
 
-    std::pair<ll, ll> get_inner_vertex_edge_count(vertex_t u) const {
+    pair<ll, ll> get_inner_vertex_edge_count(vertex_t u) const {
         check(u >= 0);
         ll outer_count = outer_edges_.contains(u) ? outer_edges_.at(u).size() : 0;
         ll inner_count = inner_edges_.contains(u) ? inner_edges_.at(u).size() : 0;
@@ -186,7 +186,7 @@ public:
     }
 
     // Returns the number of distinct neighbors of an inner vertex.
-    std::pair<ll, ll> get_inner_vertex_distinct_neighbor_count(vertex_t u) const {
+    pair<ll, ll> get_inner_vertex_distinct_neighbor_count(vertex_t u) const {
         check(u >= 0);
         ll outer_count = outer_edges_.contains(u);
         ll inner_count = 0;

@@ -7,9 +7,10 @@
 #include "icecream.hpp"
 #pragma GCC diagnostic pop
 
-
+// shortcuts:
 using ll = int64_t;
 template <typename T> using vec = std::vector<T>;
+template <typename T, typename U> using pair = std::pair<T, U>;
 
 // type aliases for easy experimenting with underlying data structures
 // TODO try other container types
@@ -21,6 +22,7 @@ template <typename K> using partition_t = std::set<K>;
 template <typename K, typename V> using flow_poly_t = std::map<K, V>;
 template <typename K, typename V> using naive_solver_memo_t = std::map<K, V>;
 
+// constants:
 constexpr ll MAX_VERTEX = 60;
 constexpr bool PRUNE_CONTINUOUSLY = true;
 
@@ -67,10 +69,10 @@ public:
 
     vertex_t u() const { return vertices_.first; }
     vertex_t v() const { return vertices_.second; }
-    std::pair<vertex_t, vertex_t> get() const { return vertices_; }
+    pair<vertex_t, vertex_t> get() const { return vertices_; }
 
 private:
-    std::pair<vertex_t, vertex_t> vertices_;
+    pair<vertex_t, vertex_t> vertices_;
 };
 
 
