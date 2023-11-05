@@ -185,18 +185,20 @@ public:
         return {outer_neighbors, inner_neighbors};
     }
 
-    // Returns the number of distinct inner neighbors of an inner vertex.
-    ll get_distinct_inner_neighbor_count(vertex_t u) const {
+    // Returns the number of distinct neighbors of an inner vertex.
+    std::pair<ll, ll> get_inner_vertex_distinct_neighbor_count(vertex_t u) const {
         check(u >= 0);
-        if (!inner_edges_.contains(u)) return 0;
-        ll result = 0;
-        vertex_t prev = -1;
-        for (const auto& v : inner_edges_.at(u)) {
-            if (v == prev) continue;
-            result++;
-            prev = v;
+        ll outer_count = outer_edges_.contains(u);
+        ll inner_count = 0;
+        if (inner_edges_.contains(u)) {
+            vertex_t prev = -1;
+            for (const auto& v : inner_edges_.at(u)) {
+                if (v == prev) continue;
+                inner_count++;
+                prev = v;
+            }
         }
-        return result;
+        return {outer_count, inner_count};
     }
 
     // Removes vertex and all its edges, and returns the removed edges.

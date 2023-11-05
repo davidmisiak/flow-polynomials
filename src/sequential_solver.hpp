@@ -6,57 +6,6 @@
 #include "multipole.hpp"
 
 
-// Provides a priority queue for vertices where lower priority is better. Each vertex can be
-// present at most once. When popping, the vertex with the lowest priority is returned; if there
-// are multiple such vertices, the one with the highest number is returned.
-class PriorityQueue {
-public:
-    bool empty() const {
-        return priorities_.empty();
-    }
-
-    void insert(vertex_t v, ll priority) {
-        check(!priorities_.contains(v));
-        priorities_[v] = priority;
-        queue_[priority].insert(v);
-    }
-
-    void remove(vertex_t v) {
-        check(priorities_.contains(v));
-        ll priority = priorities_[v];
-        priorities_.erase(v);
-        queue_[priority].erase(v);
-        if (queue_[priority].empty()) queue_.erase(priority);
-    }
-
-    void update_priority(vertex_t v, ll new_priority) {
-        check(priorities_.contains(v));
-        ll old_priority = priorities_[v];
-        priorities_[v] = new_priority;
-        queue_[old_priority].erase(v);
-        queue_[new_priority].insert(v);
-        if (queue_[old_priority].empty()) queue_.erase(old_priority);
-    }
-
-    void add_priority(vertex_t v, ll delta) {
-        check(priorities_.contains(v));
-        update_priority(v, priorities_[v] + delta);
-    }
-
-    vertex_t pop() {
-        check(!empty());
-        ll priority = queue_.rbegin()->first;
-        vertex_t v = *queue_[priority].rbegin();
-        remove(v);
-        return v;
-    }
-
-private:
-    priority_queue_t<vertex_t, ll> priorities_;
-    priority_queue_t<ll, vertex_set_t, std::greater<ll>> queue_;
-};
-
-
 // In each step:
 // - removes a vertex u with the lowest number of inner neighbors
 // - adds a new outer edge instead of each removed inner edge
@@ -69,10 +18,6 @@ public:
     FlowPoly get_flow_poly() {
         vec<Edge> loops = g_.remove_loops();
 
-        for (vertex_t u : g_.get_inner_vertices()) {
-            ll priority = g_.get_distinct_inner_neighbor_count(u);
-            queue_.insert(u, priority);
-        }
         next_outer_vertex_ = g_.get_first_unused_outer_vertex();
 
         FlowPoly result = get_flow_poly_no_loops();
@@ -86,22 +31,17 @@ private:
             return prune_if_enabled(g_.to_partition(), 1);
         }
 
-        vertex_t u = queue_.pop();
+        vertex_t u = get_inner_vertex_to_remove();
         VertexBackup backup = g_.remove_vertex(u);
 
         // contraction/deletion here yields empty flow poly, return early
         if (backup.outer_neighbors.empty() && backup.inner_neighbors.size() == 1) return {};
 
         vec<vertex_t> tmp_outer_vertices;
-        vertex_t prev = -1;
         for (vertex_t v : backup.inner_neighbors) {
             vertex_t w = next_outer_vertex_--;
             tmp_outer_vertices.push_back(w);
             g_.add_edge({v, w});
-            if (v != prev) {
-                queue_.add_priority(v, -1);
-                prev = v;
-            }
         }
 
         FlowPoly subresult = get_flow_poly_no_loops();
@@ -113,6 +53,24 @@ private:
             result += contribution;
         }
         return result;
+    }
+
+    // Returns the vertex that will contribute the least number of outer edge groups when removed.
+    // Note that this turns out to be very important - if you remove this and select e.g. always
+    // the last vertex, the performance decreases massively.
+    vertex_t get_inner_vertex_to_remove() {
+        check(g_.has_any_inner_edge());
+        vertex_t best_u = -1;
+        ll best_val = INT64_MAX;
+        for (vertex_t u : g_.get_inner_vertices()) {
+            auto [outer, inner] = g_.get_inner_vertex_distinct_neighbor_count(u);
+            ll val = inner - outer;
+            if (val <= best_val) {
+                best_u = u;
+                best_val = val;
+            }
+        }
+        return best_u;
     }
 
     // For each partition in the subresult, computes the corresponding partitions and their
@@ -170,6 +128,5 @@ private:
     }
 
     Multipole g_;
-    PriorityQueue queue_; // TODO also take into account outer neighbors? (subtract from inner?)
     vertex_t next_outer_vertex_;
 };
