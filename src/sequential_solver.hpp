@@ -21,7 +21,7 @@ public:
         next_outer_vertex_ = g_.get_first_unused_outer_vertex();
 
         FlowPoly result = get_flow_poly_no_loops();
-        result *= power(3, loops.size());
+        result.multiply(power(3, loops.size()));
         return result;
     }
 
@@ -48,9 +48,7 @@ private:
         vertex_set_t new_s_base = mset_to_set(backup.outer_neighbors);
         FlowPoly result;
         for (const auto& [p, coef] : subresult) {
-            FlowPoly contribution = process_subresult_partition(p, new_s_base, tmp_outer_vertices);
-            contribution *= coef;
-            result += contribution;
+            result.add(process_subresult_partition(p, new_s_base, tmp_outer_vertices), coef);
         }
         return result;
     }
@@ -122,7 +120,7 @@ private:
             if (!new_s.empty()) new_p.insert(new_s);
             ll removed_parity = tmp_outer_vertices.size() - contracted_count;
             if (removed_parity % 2 == 1) coef *= -1;
-            result += prune_if_enabled(new_p, coef);
+            result.add(prune_if_enabled(new_p, coef));
         }
         return result;
     }

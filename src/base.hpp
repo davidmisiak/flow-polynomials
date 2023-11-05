@@ -21,7 +21,6 @@ using vertex_set_t = boost::container::flat_set<vertex_t>;
 using vertex_mset_t = boost::container::flat_multiset<vertex_t>;
 using adjacency_t = std::map<vertex_t, vertex_mset_t>;
 template <typename K> using partition_t = boost::container::flat_set<K>;
-template <typename K, typename V> using flow_poly_t = std::map<K, V>;
 
 // constants:
 constexpr ll MAX_VERTEX = 60;
@@ -102,33 +101,33 @@ public:
 
 // Flow polynomial expressed as a linear combination of its multipole minors without inner edges
 // (each represented by the corresponding partition of its vertex set).
-class FlowPoly : public flow_poly_t<Partition, ll> {
+class FlowPoly : public std::map<Partition, ll> {
 public:
-    FlowPoly& operator+=(const FlowPoly& other) {
+    // performs "this += c*other"
+    void add(FlowPoly&& other, ll c = 1) {
+        if (c == 0) return;
+        other.multiply(c);
+        // insert items not contained in `this`
+        merge(other);
+        // update items contained in both
+        // (only those remained in `other`; though this isn't true for boost::container::flat_map!)
         for (const auto& [p, count] : other) {
             (*this)[p] += count;
             if ((*this)[p] == 0) erase(p);
         }
-        return *this;
     }
 
-    FlowPoly& operator-=(const FlowPoly& other) {
-        for (const auto& [p, count] : other) {
-            (*this)[p] -= count;
-            if ((*this)[p] == 0) erase(p);
+    void multiply(ll c) {
+        if (c == 1) {
+            return;
         }
-        return *this;
-    }
-
-    FlowPoly& operator*=(ll c) {
         if (c == 0) {
             clear();
-        } else {
-            for (auto& [p, count] : *this) {
-                count *= c;
-            }
+            return;
         }
-        return *this;
+        for (auto& [p, count] : *this) {
+            count *= c;
+        }
     }
 
     friend std::ostream& operator<<(std::ostream& os, const FlowPoly& fp) {

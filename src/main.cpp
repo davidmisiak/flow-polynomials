@@ -16,7 +16,7 @@ enum SolverType {
     ALL,
 };
 
-int main(int argc, char *argv[] ) {
+int main(int argc, char *argv[]) {
     std::ios::sync_with_stdio(false);
 
     check(argc == 3);
@@ -75,6 +75,7 @@ int main(int argc, char *argv[] ) {
                 check(fp2 == fp2.prune());
             }
             check(fp1 == fp2);
+            for (const auto& [_, coef] : fp1) check(coef != 0);
         } else {
             check(false);
         }
