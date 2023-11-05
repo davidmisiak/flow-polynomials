@@ -20,7 +20,7 @@ using vertex_t = int16_t;
 using vertex_set_t = boost::container::flat_set<vertex_t>;
 using vertex_mset_t = boost::container::flat_multiset<vertex_t>;
 using adjacency_t = std::map<vertex_t, vertex_mset_t>;
-template <typename K> using partition_t = boost::container::flat_set<K>;
+using partition_t = boost::container::flat_set<vertex_set_t>;
 
 // constants:
 constexpr ll MAX_VERTEX = 60;
@@ -77,7 +77,7 @@ private:
 
 
 // Partition of vertex set.
-class Partition : public partition_t<vertex_set_t> {
+class Partition : public partition_t {
 public:
     friend std::ostream& operator<<(std::ostream& os, const Partition& p) {
         for (const auto& s : p) {

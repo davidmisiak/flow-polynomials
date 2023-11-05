@@ -7,7 +7,7 @@
 
 
 // In each step:
-// - removes a vertex u with the lowest number of inner neighbors
+// - removes a vertex u which will contribute the least number of outer edge groups when removed
 // - adds a new outer edge instead of each removed inner edge
 // - solves the emerging subproblem
 // - computes the flow polynomial from the subproblem's flow polynomial

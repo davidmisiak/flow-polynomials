@@ -52,6 +52,6 @@ benchmark_seq: build/main
 	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq >$(DN)
 
 mods:
-	@for mod in 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
+	@for mod in 1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
 		$(PLANTRI) $$(($(v)-2))d 0/$$mod >$(DN); \
 	done
