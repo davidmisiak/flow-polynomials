@@ -8,10 +8,6 @@ C++:
 - `gcc`
 - `Boost`
 
-Enumerating graphs:
-
-- `plantri`
-
 Python scripts:
 
 - [NetworkX](https://networkx.org/)

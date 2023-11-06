@@ -5,8 +5,8 @@ GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
 GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 
 # shortcuts:
-PLANTRI=plantri -dhc2m2P
-MAIN=/bin/time build/main
+PLANTRI=./build/plantri -dhc2m2P
+MAIN=/bin/time ./build/main
 DN=/dev/null
 
 # defaults:
@@ -27,10 +27,13 @@ build/main_debug: src/*.hpp src/*.cpp
 build/random_test: src/*.hpp src/*.cpp
 	g++ $(GCC_FAST_FLAGS) -o build/random_test src/random_test.cpp
 
+build/plantri: plantri53/*
+	gcc -O3 -o build/plantri plantri53/plantri.c
+
 run: build/main
 	$(MAIN) $(input) $(solver)
 
-test: build/main build/random_test
+test: build/plantri build/main build/random_test
 	@for file in ./graphs/easy/*; do \
 		output1=$$(python scripts/flow_poly.py < $$file); \
 		output2=$$(./build/main numeric all < $$file); \
@@ -44,14 +47,14 @@ test: build/main build/random_test
 	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
-benchmark_naive: build/main
+benchmark_naive: build/plantri build/main
 	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
-benchmark_seq: build/main
+benchmark_seq: build/plantri build/main
 	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq >$(DN)
 
-mods:
+mods: build/plantri
 	@for mod in 1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
 		$(PLANTRI) $$(($(v)-2))d 0/$$mod >$(DN); \
 	done
