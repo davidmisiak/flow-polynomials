@@ -13,7 +13,7 @@ DN=/dev/null
 res=0
 mod=1
 
-.PHONY: clean run test benchmark_naive benchmark_seq mods
+.PHONY: clean run test benchmark_naive benchmark_seq compute mods
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -31,28 +31,45 @@ build/plantri: plantri53/*
 	gcc -O3 -static -o build/plantri plantri53/plantri.c
 
 run: build/main
-	$(MAIN) $(input) $(solver)
+	$(MAIN) $(input) $(solver) $(output)
 
 test: build/plantri build/main build/random_test
 	@for file in ./graphs/easy/*; do \
 		output1=$$(python scripts/flow_poly.py < $$file); \
-		output2=$$(./build/main numeric all < $$file); \
+		output2=$$(./build/main numeric all fp < $$file); \
 		if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi \
 	done
 	@echo
-	@./build/random_test | $(MAIN) numeric all >$(DN)
+	@./build/random_test | $(MAIN) numeric all fp >$(DN)
 	@echo
-	@$(PLANTRI) 14d 2>$(DN) | $(MAIN) plantri all >$(DN)
+	@$(PLANTRI) 14d 2>$(DN) | $(MAIN) plantri all fp >$(DN)
 	@echo
-	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all >$(DN)
+	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all fp >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_naive: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive fp >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_seq: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq fp >$(DN)
+
+# `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute the stats
+compute: build/plantri build/main
+	@mkdir tmp
+	@for v in $$(seq 4 2 $(maxv)); do \
+		( \
+			failed=0; pids=""; \
+			for res in $$(seq 0 $$(($(mod)-1))); do \
+				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq stats >tmp/$$v-$$res & \
+				pids="$$pids $$!"; \
+			done; \
+			for pid in $$pids; do wait $$pid || failed=1; done; \
+			if [ $$failed -eq 1 ]; then exit 1; fi; \
+		) \
+	done
+	@cat tmp/* >stats-$(maxv).txt
+	@rm -r tmp
 
 mods: build/plantri
 	@for mod in 1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \

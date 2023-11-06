@@ -4,6 +4,7 @@
 #include "multipole.hpp"
 #include "naive_solver.hpp"
 #include "sequential_solver.hpp"
+#include "output.hpp"
 
 enum InputType {
     NUMERIC,
@@ -19,7 +20,10 @@ enum SolverType {
 int main(int argc, char *argv[]) {
     std::ios::sync_with_stdio(false);
 
-    check(argc == 3);
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <input_type> <solver_type> <output_type>" << std::endl;
+        check(false);
+    }
 
     InputType input_type = NUMERIC;
     if (strcmp(argv[1], "numeric") == 0) {
@@ -41,13 +45,17 @@ int main(int argc, char *argv[]) {
         check(false);
     }
 
-    ll count = 0;
-    ll max_coef_count = 0;
-    ll max_coef_value = 0;
-    ll max_star_coef_value = 0;
-    while (std::cin.peek() != EOF) {
-        count++;
+    OutputType output_type = FLOW_POLY;
+    if (strcmp(argv[3], "fp") == 0) {
+        output_type = FLOW_POLY;
+    } else if (strcmp(argv[3], "stats") == 0) {
+        output_type = STATS;
+    } else {
+        check(false);
+    }
 
+    Output output(output_type);
+    while (std::cin.peek() != EOF) {
         Multipole g;
         if (input_type == NUMERIC) {
             g = Multipole::read_numeric();
@@ -70,6 +78,7 @@ int main(int argc, char *argv[]) {
         } else if (solver_type == ALL) {
             fp1 = NaiveSolver(g, true).get_flow_poly();
             fp2 = SequentialSolver(g).get_flow_poly();
+            // sanity checks:
             if (PRUNE_CONTINUOUSLY) {
                 check(fp1 == fp1.prune());
                 check(fp2 == fp2.prune());
@@ -79,20 +88,7 @@ int main(int argc, char *argv[]) {
         } else {
             check(false);
         }
-        // std::cout << fp1 << std::endl;
-        std::cout << fp1.prune() << std::endl;
-
-        max_coef_count = std::max(max_coef_count, static_cast<ll>(fp1.size()));
-        for (const auto& [p, coef] : fp1) {
-            max_coef_value = std::max(max_coef_value, coef);
-        }
-        Partition star({g.get_outer_vertices()});
-        if (fp1.contains(star)) {
-            max_star_coef_value = std::max(max_star_coef_value, fp1.at(star));
-        }
+        output.process(g, fp1);
     }
-    std::cerr << "Processed " << count << " graphs" << std::endl;
-    std::cerr << "max coef count = " << max_coef_count
-        << ", max coef val = " << max_coef_value
-        << ", max star coef val = " << max_star_coef_value << std::endl;
+    output.summary();
 }
