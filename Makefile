@@ -1,6 +1,6 @@
 # gcc:
-GCC_SANITIZER_FLAGS=-fsanitize=undefined -fno-sanitize-recover=all
-GCC_COMMON_FLAGS=$(GCC_SANITIZER_FLAGS) -Wall -Wextra -Werror -pedantic -std=c++20
+GCC_SANITIZER_FLAGS=-fsanitize=signed-integer-overflow -fsanitize-trap=all
+GCC_COMMON_FLAGS=$(GCC_SANITIZER_FLAGS) -Wall -Wextra -Werror -pedantic -std=c++20 -static
 GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
 GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 
@@ -28,7 +28,7 @@ build/random_test: src/*.hpp src/*.cpp
 	g++ $(GCC_FAST_FLAGS) -o build/random_test src/random_test.cpp
 
 build/plantri: plantri53/*
-	gcc -O3 -o build/plantri plantri53/plantri.c
+	gcc -O3 -static -o build/plantri plantri53/plantri.c
 
 run: build/main
 	$(MAIN) $(input) $(solver)
