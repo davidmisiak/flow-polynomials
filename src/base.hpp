@@ -27,9 +27,10 @@ constexpr ll MAX_VERTEX = 60;
 constexpr bool PRUNE_CONTINUOUSLY = true;
 
 
-void check(bool cond) {
+void check(bool cond, const std::string& msg = "") {
     if (!cond) {
-        throw std::runtime_error("Assertion failed");
+        std::cerr << "Check failed: " << msg << std::endl;
+        exit(1);
     }
 }
 

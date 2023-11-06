@@ -36,9 +36,9 @@ public:
     Multipole(const vec<Edge>& edges) {
         for (const auto& e : edges) {
             auto [u, v] = e.get();
-            check(u >= -MAX_VERTEX);
-            check(v >= 0);
-            check(v <= MAX_VERTEX);
+            check(u >= -MAX_VERTEX, "u too small");
+            check(v >= 0, "v too small");
+            check(v <= MAX_VERTEX, "v too large");
             add_edge(e);
         }
     }
@@ -109,14 +109,14 @@ public:
     // Returns the pair of vertices with the following property: The second vertex is the largest
     // vertex with an inner neighbor, and the first vertex is the largest of its inner neighbors.
     pair<vertex_t, vertex_t> get_largest_inner_edge() const {
-        check(has_any_inner_edge());
+        check(has_any_inner_edge(), "no inner edges");
         const auto& [v, neighbors] = *inner_edges_.rbegin();
         vertex_t u = *neighbors.rbegin();
         return {u, v};
     }
 
     pair<ll, ll> get_inner_vertex_edge_count(vertex_t u) const {
-        check(u >= 0);
+        check(u >= 0, "u is outer vertex");
         ll outer_count = outer_edges_.contains(u) ? outer_edges_.at(u).size() : 0;
         ll inner_count = inner_edges_.contains(u) ? inner_edges_.at(u).size() : 0;
         return {outer_count, inner_count};
@@ -132,7 +132,7 @@ public:
     }
 
     void remove_edge(const Edge& e) {
-        check(has_edge(e));
+        check(has_edge(e), "edge does not exist");
         auto [u, v] = e.get();
         adjacency_t& edges = u < 0 ? outer_edges_ : inner_edges_;
         edges[u].erase(edges[u].find(v));
@@ -196,7 +196,7 @@ public:
 
     // Returns the number of distinct neighbors of an inner vertex.
     pair<ll, ll> get_inner_vertex_distinct_neighbor_count(vertex_t u) const {
-        check(u >= 0);
+        check(u >= 0, "u is outer vertex");
         ll outer_count = outer_edges_.contains(u);
         ll inner_count = 0;
         if (inner_edges_.contains(u)) {
@@ -224,7 +224,7 @@ public:
 
     // Contracts a u-v inner edge, while merging v into u and dropping all emerging loops.
     ContractionBackup contract_edge(vertex_t u, vertex_t v) {
-        check(has_edge({u, v}));
+        check(has_edge({u, v}), "edge does not exist");
         ContractionBackup backup(get_vertex_backup(u), get_vertex_backup(v));
         for (const auto& w : backup.v.outer_neighbors) {
             remove_edge({v, w});
@@ -256,7 +256,7 @@ public:
     }
 
     Partition to_partition() const {
-        check(!has_any_inner_edge());
+        check(!has_any_inner_edge(), "inner edges exist");
         Partition result;
         for (const auto& [u, neighbors] : outer_edges_) {
             if (u < 0) continue;

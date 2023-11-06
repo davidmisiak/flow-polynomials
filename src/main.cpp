@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     if (argc != 4) {
         std::cerr << "Usage: " << argv[0] << " <input_type> <solver_type> <output_type>" << std::endl;
-        check(false);
+        check(false, "invalid number of arguments");
     }
 
     InputType input_type = NUMERIC;
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(argv[1], "plantri") == 0) {
         input_type = PLANTRI;
     } else {
-        check(false);
+        check(false, "invalid input type");
     }
 
     SolverType solver_type = NAIVE;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(argv[2], "all") == 0) {
         solver_type = ALL;
     } else {
-        check(false);
+        check(false, "invalid solver type");
     }
 
     OutputType output_type = FLOW_POLY;
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(argv[3], "stats") == 0) {
         output_type = STATS;
     } else {
-        check(false);
+        check(false, "invalid output type");
     }
 
     Output output(output_type);
@@ -80,11 +80,11 @@ int main(int argc, char *argv[]) {
             fp2 = SequentialSolver(g).get_flow_poly();
             // sanity checks:
             if (PRUNE_CONTINUOUSLY) {
-                check(fp1 == fp1.prune());
-                check(fp2 == fp2.prune());
+                check(fp1 == fp1.prune(), "fp1 != fp1.prune()");
+                check(fp2 == fp2.prune(), "fp2 != fp2.prune()");
             }
-            check(fp1 == fp2);
-            for (const auto& [_, coef] : fp1) check(coef != 0);
+            check(fp1 == fp2, "fp1 != fp2");
+            for (const auto& [_, coef] : fp1) check(coef != 0, "fp contains zero");
         } else {
             check(false);
         }

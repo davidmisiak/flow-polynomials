@@ -57,7 +57,7 @@ private:
     // Note that this turns out to be very important - if you remove this and select e.g. always
     // the last vertex, the performance decreases massively.
     vertex_t get_inner_vertex_to_remove() {
-        check(g_.has_any_inner_edge());
+        check(g_.has_any_inner_edge(), "no inner edges");
         vertex_t best_u = -1;
         ll best_val = INT64_MAX;
         for (vertex_t u : g_.get_inner_vertices()) {
