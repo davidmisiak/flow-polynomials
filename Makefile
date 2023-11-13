@@ -5,9 +5,10 @@ GCC_FAST_FLAGS=$(GCC_COMMON_FLAGS) -O3
 GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 
 # shortcuts:
-PLANTRI=./build/plantri -dhc2m2P
-MAIN=/bin/time ./build/main
+PLANTRI_FLAGS=c2m2Pd
+PLANTRI=./build/plantri -h$(PLANTRI_FLAGS)
 P2N=./build/plantri2num
+MAIN=/bin/time ./build/main
 DN=/dev/null
 
 # defaults:
@@ -84,10 +85,11 @@ compute: build/plantri build/main
 			if [ $$failed -eq 1 ]; then exit 1; fi; \
 		) \
 	done
-	@cat tmp/* >stats-$(maxv).txt
+	@mkdir -p stats
+	@cat tmp/* >stats/stats-$(PLANTRI_FLAGS)-$(maxv).txt
 	@rm -r tmp
 
 mods: build/plantri
 	@for mod in 1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
-		$(PLANTRI) $$(($(v)-2))d 0/$$mod >$(DN); \
+		$(PLANTRI) $$(($(v)-2))d $(res)/$$mod >$(DN); \
 	done
