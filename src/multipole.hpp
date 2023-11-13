@@ -59,6 +59,15 @@ public:
         return Multipole(edges);
     }
 
+    void write_numeric() const {
+        std::multiset<Edge> edges = get_edges();
+        std::cout << edges.size() << '\n';
+        for (const auto& e : edges) {
+            auto [u, v] = e.get();
+            std::cout << u << " " << v << '\n';
+        }
+    }
+
     static Multipole read_plantri_disk_triangulation(bool ignored = false) {
         // read input, convert to zero-based indexing
         uint8_t n = std::cin.get();
@@ -104,6 +113,21 @@ public:
 
     bool has_any_inner_edge() const {
         return !inner_edges_.empty();
+    }
+
+    std::multiset<Edge> get_edges() const {
+        std::multiset<Edge> result;
+        for (const auto& [u, neighbors] : outer_edges_) {
+            for (const auto& v : neighbors) {
+                if (u <= v) result.insert({u, v});
+            }
+        }
+        for (const auto& [u, neighbors] : inner_edges_) {
+            for (const auto& v : neighbors) {
+                if (u <= v) result.insert({u, v});
+            }
+        }
+        return result;
     }
 
     // Returns the pair of vertices with the following property: The second vertex is the largest

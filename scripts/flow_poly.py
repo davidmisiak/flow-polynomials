@@ -1,5 +1,5 @@
-from functools import lru_cache
-from dataclasses import dataclass
+import dataclasses
+import functools
 
 fset = frozenset
 Edge = fset[int]
@@ -47,7 +47,7 @@ class FlowPoly(dict[Partition, int]):
         return FlowPoly({p: count for p, count in self.items() if 1 not in map(len, p)})
 
 
-@dataclass(frozen=True, unsafe_hash=True)
+@dataclasses.dataclass(frozen=True, unsafe_hash=True)
 class Multipole:
     '''
     Represent a k-pole with n inner vertices.
@@ -108,7 +108,7 @@ class Multipole:
             result.setdefault(v, set()).add(u)
         return Partition(fset(fset(s) for s in result.values()))
 
-    @lru_cache
+    @functools.lru_cache
     def get_flow_poly(self) -> FlowPoly:
         g, loops = self.remove_loops()
         loop_factor = 3 ** loops
@@ -125,7 +125,11 @@ class Multipole:
 
 
 if __name__ == '__main__':
-    g = Multipole.read()
-    fp = g.get_flow_poly()
-    # print(fp)
-    print(fp.prune())
+    while True:
+        try:
+            g = Multipole.read()
+            fp = g.get_flow_poly()
+            # print(fp)
+            print(fp.prune())
+        except EOFError:
+            break

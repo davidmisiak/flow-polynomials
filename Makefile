@@ -7,6 +7,7 @@ GCC_DEBUG_FLAGS=$(GCC_COMMON_FLAGS) -Og -g
 # shortcuts:
 PLANTRI=./build/plantri -dhc2m2P
 MAIN=/bin/time ./build/main
+P2N=./build/plantri2num
 DN=/dev/null
 
 # defaults:
@@ -27,24 +28,39 @@ build/main_debug: src/*.hpp src/*.cpp
 build/random_test: src/*.hpp src/*.cpp
 	g++ $(GCC_FAST_FLAGS) -o build/random_test src/random_test.cpp
 
+build/plantri2num: src/*.hpp src/*.cpp
+	g++ $(GCC_FAST_FLAGS) -o build/plantri2num src/plantri2num.cpp
+
 build/plantri: plantri53/*
 	gcc -O3 -static -o build/plantri plantri53/plantri.c
 
 run: build/main
 	$(MAIN) $(input) $(solver) $(output)
 
-test: build/plantri build/main build/random_test
-	@for file in ./graphs/easy/*; do \
-		output1=$$(python scripts/flow_poly.py < $$file); \
-		output2=$$(./build/main numeric all fp < $$file); \
-		if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi \
-	done
-	@echo
-	@./build/random_test | $(MAIN) numeric all fp >$(DN)
-	@echo
-	@$(PLANTRI) 14d 2>$(DN) | $(MAIN) plantri all fp >$(DN)
-	@echo
-	@$(PLANTRI) 20d 0/1000 2>$(DN) | $(MAIN) plantri all fp >$(DN)
+test: build/plantri build/main build/random_test build/plantri2num
+	@echo "./graphs/easy/*:"; \
+	output1=$$(cat ./graphs/easy/* | python scripts/flow_poly.py); \
+	output2=$$(cat ./graphs/easy/* | ./build/main num all fp); \
+	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	echo; \
+	echo "30 random:"; \
+	output1=$$(./build/random_test 30 | python scripts/flow_poly.py); \
+	output2=$$(./build/random_test 30 | ./build/main num all fp); \
+	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	echo; \
+	echo "plantri v=12:"; \
+	output1=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | $(P2N) | python scripts/flow_poly.py); \
+	output2=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | ./build/main plantri all fp); \
+	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	echo; \
+	echo "3000 random:"; \
+	./build/random_test 3000 | $(MAIN) num all fp >$(DN); \
+	echo; \
+	echo "plantri v=14:"; \
+	./build/plantri -hc2m2Pd 14d 2>$(DN) | $(MAIN) plantri all fp >$(DN); \
+	echo; \
+	echo "plantri v=20 mod=1000:"; \
+	./build/plantri -hc2m2Pd 20d 0/1000 2>$(DN) | $(MAIN) plantri all fp >$(DN)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_naive: build/plantri build/main

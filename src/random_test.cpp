@@ -3,8 +3,15 @@
 #include "base.hpp"
 
 
-int main() {
-    for (ll instance = 0; instance < 3000; instance++) {
+int main(int argc, char *argv[]) {
+    std::ios::sync_with_stdio(false);
+
+    check(argc == 2, "invalid number of arguments");
+    ll instances = std::stoll(argv[1]);
+
+    srand(0);
+
+    for (ll instance = 0; instance < instances; instance++) {
         ll k = rand() % 6;
         ll n = (rand() % 9) + 1;
         ll m = rand() % (n*n/2+1);

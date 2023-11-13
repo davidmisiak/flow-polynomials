@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     }
 
     InputType input_type = NUMERIC;
-    if (strcmp(argv[1], "numeric") == 0) {
+    if (strcmp(argv[1], "num") == 0) {
         input_type = NUMERIC;
     } else if (strcmp(argv[1], "plantri") == 0) {
         input_type = PLANTRI;
