@@ -12,6 +12,9 @@ MAIN=/bin/time ./build/main
 DN=/dev/null
 
 # defaults:
+input=num
+solver=seq
+output=none
 res=0
 mod=1
 
@@ -40,53 +43,53 @@ run: build/main
 
 test: build/plantri build/main build/random_test build/plantri2num
 	@echo "./graphs/easy/*:"; \
-	output1=$$(cat ./graphs/easy/* | python scripts/flow_poly.py); \
-	output2=$$(cat ./graphs/easy/* | ./build/main num all fp); \
-	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	out1=$$(cat ./graphs/easy/* | python scripts/flow_poly.py); \
+	out2=$$(cat ./graphs/easy/* | ./build/main num all fp); \
+	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "30 random:"; \
-	output1=$$(./build/random_test 30 | python scripts/flow_poly.py); \
-	output2=$$(./build/random_test 30 | ./build/main num all fp); \
-	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	out1=$$(./build/random_test 30 | python scripts/flow_poly.py); \
+	out2=$$(./build/random_test 30 | ./build/main num all fp); \
+	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "plantri v=12:"; \
-	output1=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | $(P2N) | python scripts/flow_poly.py); \
-	output2=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | ./build/main plantri all fp); \
-	if [ "$$output1" != "$$output2" ]; then echo "Test failed"; exit 1; fi; \
+	out1=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | $(P2N) | python scripts/flow_poly.py); \
+	out2=$$(./build/plantri -hc2m2Pd 12d 2>$(DN) | ./build/main plantri all fp); \
+	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "3000 random:"; \
-	./build/random_test 3000 | $(MAIN) num all fp >$(DN); \
+	./build/random_test 3000 | $(MAIN) num all none; \
 	echo; \
 	echo "plantri v=14:"; \
-	./build/plantri -hc2m2Pd 14d 2>$(DN) | $(MAIN) plantri all fp >$(DN); \
+	./build/plantri -hc2m2Pd 14d 2>$(DN) | $(MAIN) plantri all none; \
 	echo; \
 	echo "plantri v=20 mod=1000:"; \
-	./build/plantri -hc2m2Pd 20d 0/1000 2>$(DN) | $(MAIN) plantri all fp >$(DN)
+	./build/plantri -hc2m2Pd 20d 0/1000 2>$(DN) | $(MAIN) plantri all none
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_naive: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive fp >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive $(output)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_seq: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq fp >$(DN)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output)
 
-# `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute the stats
+# `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute
 compute: build/plantri build/main
 	@mkdir tmp
 	@for v in $$(seq 4 2 $(maxv)); do \
 		( \
 			failed=0; pids=""; \
 			for res in $$(seq 0 $$(($(mod)-1))); do \
-				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq stats >tmp/$$v-$$res & \
+				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) >tmp/$$v-$$res & \
 				pids="$$pids $$!"; \
 			done; \
 			for pid in $$pids; do wait $$pid || failed=1; done; \
 			if [ $$failed -eq 1 ]; then exit 1; fi; \
 		) \
 	done
-	@mkdir -p stats
-	@cat tmp/* >stats/stats-$(PLANTRI_FLAGS)-$(maxv).txt
+	@mkdir -p computed
+	@cat tmp/* >computed/$(output)-$(PLANTRI_FLAGS)-$(maxv).txt
 	@rm -r tmp
 
 mods: build/plantri

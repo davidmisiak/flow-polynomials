@@ -6,6 +6,8 @@
 #include "multipole.hpp"
 
 enum OutputType {
+    NONE,
+    GRAPH,
     FLOW_POLY,
     STATS,
 };
@@ -30,18 +32,32 @@ public:
             star_coef_value = fp.at(star);
         }
 
-        if (output_type_ == FLOW_POLY) {
-            std::cout << fp << std::endl;
-        } else if (output_type_ == STATS) {
-            std::cout << outer_vertex_count
-                << " " << inner_vertex_count
-                << " " << coef_count
-                << " " << min_coef_value
-                << " " << max_coef_value
-                << " " << star_coef_value
-                << std::endl;
-        } else {
-            check(false);
+        bool print_cond = true; // you can use a custom condition
+        // ll v = outer_vertex_count + inner_vertex_count;
+        // print_cond = (v == 16 && star_coef_value == 21)
+        //     || (v == 18 && star_coef_value == 44)
+        //     || (v == 20 && star_coef_value == 85)
+        //     || (v == 22 && star_coef_value == 172)
+        //     || (v == 24 && star_coef_value == 341)
+        //     || (v == 26 && star_coef_value == 684);
+        if (print_cond) {
+            if (output_type_ == NONE) {
+                // do nothing
+            } else if (output_type_ == GRAPH) {
+                g.write_numeric(std::cout);
+            } else if (output_type_ == FLOW_POLY) {
+                std::cout << fp << std::endl;
+            } else if (output_type_ == STATS) {
+                std::cout << outer_vertex_count
+                    << " " << inner_vertex_count
+                    << " " << coef_count
+                    << " " << min_coef_value
+                    << " " << max_coef_value
+                    << " " << star_coef_value
+                    << std::endl;
+            } else {
+                check(false);
+            }
         }
 
         count_++;

@@ -47,35 +47,35 @@ public:
         return tie(g1.outer_edges_, g1.inner_edges_) < tie(g2.outer_edges_, g2.inner_edges_);
     }
 
-    static Multipole read_numeric() {
+    static Multipole read_numeric(std::istream& is) {
         ll m;
-        std::cin >> m;
+        is >> m;
         vec<Edge> edges;
         for (ll i = 0; i < m; i++) {
             ll u, v;
-            std::cin >> u >> v;
+            is >> u >> v;
             edges.push_back({static_cast<vertex_t>(u), static_cast<vertex_t>(v)});
         }
         return Multipole(edges);
     }
 
-    void write_numeric() const {
+    void write_numeric(std::ostream& os) const {
         std::multiset<Edge> edges = get_edges();
-        std::cout << edges.size() << '\n';
+        os << edges.size() << '\n';
         for (const auto& e : edges) {
             auto [u, v] = e.get();
             std::cout << u << " " << v << '\n';
         }
     }
 
-    static Multipole read_plantri_disk_triangulation(bool ignored = false) {
+    static Multipole read_plantri_disk_triangulation(std::istream& is, bool ignored = false) {
         // read input, convert to zero-based indexing
-        uint8_t n = std::cin.get();
+        uint8_t n = is.get();
         vec<vec<vertex_t>> input;
         for (uint8_t i = 0; i < n; i++) {
             vec<vertex_t> neighbors;
             while (true) {
-                uint8_t v = std::cin.get();
+                uint8_t v = is.get();
                 if (v == 0) break;
                 neighbors.push_back(v - 1);
             }

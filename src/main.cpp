@@ -46,7 +46,11 @@ int main(int argc, char *argv[]) {
     }
 
     OutputType output_type = FLOW_POLY;
-    if (strcmp(argv[3], "fp") == 0) {
+    if (strcmp(argv[3], "none") == 0) {
+        output_type = NONE;
+    } else if (strcmp(argv[3], "graph") == 0) {
+        output_type = GRAPH;
+    } else if (strcmp(argv[3], "fp") == 0) {
         output_type = FLOW_POLY;
     } else if (strcmp(argv[3], "stats") == 0) {
         output_type = STATS;
@@ -58,9 +62,9 @@ int main(int argc, char *argv[]) {
     while (std::cin.peek() != EOF) {
         Multipole g;
         if (input_type == NUMERIC) {
-            g = Multipole::read_numeric();
+            g = Multipole::read_numeric(std::cin);
         } else if (input_type == PLANTRI) {
-            g = Multipole::read_plantri_disk_triangulation();
+            g = Multipole::read_plantri_disk_triangulation(std::cin);
         } else {
             check(false);
         }
