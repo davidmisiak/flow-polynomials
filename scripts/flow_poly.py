@@ -1,5 +1,6 @@
 import dataclasses
 import functools
+from typing import Iterator
 
 fset = frozenset
 Edge = fset[int]
@@ -69,6 +70,14 @@ class Multipole:
         return Multipole(tuple(outer), tuple(inner))
 
     @staticmethod
+    def parse(s: str) -> 'Multipole':
+        lines = s.splitlines()
+        m = int(lines[0])
+        assert len(lines) == m+1
+        edges = [tuple(map(int, line.split())) for line in lines[1:]]
+        return Multipole.build(edges)
+
+    @staticmethod
     def read() -> 'Multipole':
         m = int(input())
         edges = [tuple(map(int, input().split())) for _ in range(m)]
@@ -124,12 +133,16 @@ class Multipole:
         return (result_contracted - result_removed) * loop_factor
 
 
-if __name__ == '__main__':
+def read_graphs() -> Iterator[Multipole]:
     while True:
         try:
-            g = Multipole.read()
-            fp = g.get_flow_poly()
-            # print(fp)
-            print(fp.prune())
+            yield Multipole.read()
         except EOFError:
             break
+
+
+if __name__ == '__main__':
+    for g in read_graphs():
+        fp = g.get_flow_poly()
+        # print(fp)
+        print(fp.prune())

@@ -33,13 +33,30 @@ public:
         }
 
         bool print_cond = true; // you can use a custom condition
+
+        // max star:
         // ll v = outer_vertex_count + inner_vertex_count;
-        // print_cond = (v == 16 && star_coef_value == 21)
-        //     || (v == 18 && star_coef_value == 44)
-        //     || (v == 20 && star_coef_value == 85)
-        //     || (v == 22 && star_coef_value == 172)
-        //     || (v == 24 && star_coef_value == 341)
-        //     || (v == 26 && star_coef_value == 684);
+        // ll k = outer_vertex_count;
+        // print_cond =
+        //     (v == 16 && k == 3 && star_coef_value == 21 ) ||
+        //     (v == 16 && k == 4 && star_coef_value == 11 ) ||
+        //     (v == 16 && k == 5 && star_coef_value == 5  ) ||
+        //     (v == 18 && k == 3 && star_coef_value == 44 ) ||
+        //     (v == 18 && k == 4 && star_coef_value == 21 ) ||
+        //     (v == 18 && k == 5 && star_coef_value == 10 ) ||
+        //     (v == 20 && k == 3 && star_coef_value == 85 ) ||
+        //     (v == 20 && k == 4 && star_coef_value == 43 ) ||
+        //     (v == 20 && k == 5 && star_coef_value == 21 ) ||
+        //     (v == 22 && k == 3 && star_coef_value == 172) ||
+        //     (v == 22 && k == 4 && star_coef_value == 85 ) ||
+        //     (v == 22 && k == 5 && star_coef_value == 42 ) ||
+        //     (v == 24 && k == 3 && star_coef_value == 341) ||
+        //     (v == 24 && k == 4 && star_coef_value == 171) ||
+        //     (v == 24 && k == 5 && star_coef_value == 85 ) ||
+        //     (v == 26 && k == 3 && star_coef_value == 684) ||
+        //     (v == 26 && k == 4 && star_coef_value == 341) ||
+        //     (v == 26 && k == 5 && star_coef_value == 170);
+
         if (print_cond) {
             if (output_type_ == NONE) {
                 // do nothing
