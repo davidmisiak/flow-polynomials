@@ -94,7 +94,7 @@ compute: build/plantri build/main
 		) \
 	done; \
 	mkdir -p computed; \
-	cat tmp/* >computed/$(output)-$(PLANTRI_FLAGS)-$(maxv).txt; \
+	cat tmp/* | gzip -c >computed/$(output)-$(PLANTRI_FLAGS)-$(maxv).txt.gz; \
 	rm -r tmp
 
 save_max_star: build/plantri build/main
