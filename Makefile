@@ -18,7 +18,7 @@ output=none
 res=0
 mod=1
 
-.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star
+.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -42,7 +42,8 @@ run: build/main
 	$(MAIN) $(input) $(solver) $(output)
 
 test: build/plantri build/main build/random_test build/plantri2num
-	@echo "./graphs/easy/*:"; \
+	@set -e; \
+	echo "./graphs/easy/*:"; \
 	out1=$$(cat ./graphs/easy/* | python scripts/flow_poly.py); \
 	out2=$$(cat ./graphs/easy/* | ./build/main num all fp); \
 	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
@@ -81,7 +82,8 @@ benchmark_seq: build/plantri build/main
 
 # `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute
 compute: build/plantri build/main
-	@mkdir tmp; \
+	@set -e; \
+	mkdir tmp; \
 	for v in $$(seq 4 2 $(maxv)); do \
 		( \
 			failed=0; pids=""; \
@@ -102,6 +104,13 @@ save_max_star: build/plantri build/main
 	read -rsn1; \
 	for v in 16 18 20 22; do \
 		for k in 3 4 5; do \
-			./build/plantri -hdP$$k $$(($$v-2))d 2>$(DN) | $(MAIN) plantri all graph >graphs/max_star/$$k-$$v.txt; \
+			./build/plantri -hdP$$k $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph >graphs/max_star/$$k-$$v.txt; \
 		done; \
+	done
+
+save_k4_max_colorings: build/plantri build/main
+	@echo -n "Did you uncomment the k4 max colorings condition in output.hpp? Press any key to confirm..."; \
+	read -rsn1; \
+	for v in 16 18 20 22; do \
+		./build/plantri -hdP4 $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph >graphs/k4_max_colorings/$$v.txt; \
 	done

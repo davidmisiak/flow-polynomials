@@ -10,6 +10,7 @@ enum OutputType {
     GRAPH,
     FLOW_POLY,
     STATS,
+    K4,
 };
 
 class Output {
@@ -17,8 +18,9 @@ public:
     Output(OutputType output_type) : output_type_(output_type) {}
 
     void process(const Multipole& g, const FlowPoly& fp) {
-        ll outer_vertex_count = static_cast<ll>(g.get_outer_vertices().size());
-        ll inner_vertex_count = static_cast<ll>(g.get_inner_vertices().size());
+        ll k = static_cast<ll>(g.get_outer_vertices().size());
+        ll n = static_cast<ll>(g.get_inner_vertices().size());
+        [[maybe_unused]] ll v = k + n;
         ll coef_count = static_cast<ll>(fp.size());
         ll min_coef_value = INT64_MAX;
         ll max_coef_value = INT64_MIN;
@@ -34,9 +36,7 @@ public:
 
         bool print_cond = true; // you can use a custom condition
 
-        // max star:
-        // ll v = outer_vertex_count + inner_vertex_count;
-        // ll k = outer_vertex_count;
+        // max star (run only with PLANTRI_FLAGS=dP):
         // print_cond =
         //     (v == 16 && k == 3 && star_coef_value == 21 ) ||
         //     (v == 16 && k == 4 && star_coef_value == 11 ) ||
@@ -57,6 +57,19 @@ public:
         //     (v == 26 && k == 4 && star_coef_value == 341) ||
         //     (v == 26 && k == 5 && star_coef_value == 170);
 
+        // k4 max colorings (run only with PLANTRI_FLAGS=dP4):
+        // check(k == 4);
+        // ll colorings = 0;
+        // for (const auto& [_, coef] : fp) colorings += coef;
+        // colorings = 9*colorings + 12*star_coef_value; // = 21*star + 9*second + 9*third
+        // print_cond =
+        //     (v == 16 && k == 4 && colorings == 198 ) ||
+        //     (v == 18 && k == 4 && colorings == 390 ) ||
+        //     (v == 20 && k == 4 && colorings == 774 ) ||
+        //     (v == 22 && k == 4 && colorings == 1542) ||
+        //     (v == 24 && k == 4 && colorings == 3078) ||
+        //     (v == 26 && k == 4 && colorings == 6150);
+
         if (print_cond) {
             if (output_type_ == NONE) {
                 // do nothing
@@ -65,13 +78,31 @@ public:
             } else if (output_type_ == FLOW_POLY) {
                 std::cout << fp << std::endl;
             } else if (output_type_ == STATS) {
-                std::cout << outer_vertex_count
-                    << " " << inner_vertex_count
+                std::cout << k
+                    << " " << n
                     << " " << coef_count
                     << " " << min_coef_value
                     << " " << max_coef_value
                     << " " << star_coef_value
                     << std::endl;
+            } else if (output_type_ == K4) {
+                if (k == 4) {
+                    ll second_coef_value = 0;
+                    Partition second_coef({{-1, -2}, {-3, -4}});
+                    if (fp.contains(second_coef)) second_coef_value = fp.at(second_coef);
+
+                    ll third_coef_value = 0;
+                    Partition third_coef({{-1, -4}, {-2, -3}});
+                    if (fp.contains(third_coef)) third_coef_value = fp.at(third_coef);
+
+                    check(!fp.contains({{{-1, -3}, {-2, -4}}}), "nonplanar coef");
+
+                    std::cout << n
+                        << " " << star_coef_value
+                        << " " << second_coef_value
+                        << " " << third_coef_value
+                        << std::endl;
+                }
             } else {
                 check(false);
             }

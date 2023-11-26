@@ -54,6 +54,8 @@ int main(int argc, char *argv[]) {
         output_type = FLOW_POLY;
     } else if (strcmp(argv[3], "stats") == 0) {
         output_type = STATS;
+    } else if (strcmp(argv[3], "k4") == 0) {
+        output_type = K4;
     } else {
         check(false, "invalid output type");
     }
