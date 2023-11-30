@@ -56,6 +56,8 @@ int main(int argc, char *argv[]) {
         output_type = STATS;
     } else if (strcmp(argv[3], "k4") == 0) {
         output_type = K4;
+    } else if (strcmp(argv[3], "k5") == 0) {
+        output_type = K5;
     } else {
         check(false, "invalid output type");
     }

@@ -11,6 +11,7 @@ enum OutputType {
     FLOW_POLY,
     STATS,
     K4,
+    K5,
 };
 
 class Output {
@@ -87,21 +88,24 @@ public:
                     << std::endl;
             } else if (output_type_ == K4) {
                 if (k == 4) {
-                    ll second_coef_value = 0;
-                    Partition second_coef({{-1, -2}, {-3, -4}});
-                    if (fp.contains(second_coef)) second_coef_value = fp.at(second_coef);
-
-                    ll third_coef_value = 0;
-                    Partition third_coef({{-1, -4}, {-2, -3}});
-                    if (fp.contains(third_coef)) third_coef_value = fp.at(third_coef);
-
-                    check(!fp.contains({{{-1, -3}, {-2, -4}}}), "nonplanar coef");
-
-                    std::cout << n
-                        << " " << star_coef_value
-                        << " " << second_coef_value
-                        << " " << third_coef_value
-                        << std::endl;
+                    vec<Partition> ps = {
+                        star,
+                        {{{-1, -2}, {-3, -4}}},
+                        {{{-2, -3}, {-4, -1}}},
+                    };
+                    print_coefs(n, fp, ps);
+                }
+            } else if (output_type_ == K5) {
+                if (k == 5) {
+                    vec<Partition> ps = {
+                        star,
+                        {{{-1, -2}, {-3, -4, -5}}},
+                        {{{-2, -3}, {-4, -5, -1}}},
+                        {{{-3, -4}, {-5, -1, -2}}},
+                        {{{-4, -5}, {-1, -2, -3}}},
+                        {{{-5, -1}, {-2, -3, -4}}},
+                    };
+                    print_coefs(n, fp, ps);
                 }
             } else {
                 check(false);
@@ -126,6 +130,19 @@ public:
     }
 
 private:
+    // prints coefficient values in the given order
+    void print_coefs(ll n, const FlowPoly& fp, const vec<Partition>& ps) {
+        for (const auto& [p, _] : fp) {
+            check(std::find(ps.begin(), ps.end(), p) != ps.end(), "nonplanar coef");
+        }
+        std::cout << n;
+        for (const auto& p : ps) {
+            ll coef_value = fp.contains(p) ? fp.at(p) : 0;
+            std::cout << " " << coef_value;
+        }
+        std::cout << std::endl;
+    }
+
     OutputType output_type_;
     ll count_ = 0;
     ll min_coef_count_ = INT64_MAX;
