@@ -71,6 +71,19 @@ public:
         //     (v == 24 && k == 4 && colorings == 3078) ||
         //     (v == 26 && k == 4 && colorings == 6150);
 
+        // k5 far away on the line 5a+b+c+d+e+f=0 (run with PLANTRI_FLAGS=dP5):
+        // check(k == 5);
+        // vec<ll> fp_values = {};
+        // for (const auto& [_, coef] : fp) fp_values.push_back(coef);
+        // std::sort(fp_values.begin(), fp_values.end());
+        // print_cond =
+        //     (v == 16 && k == 5 && fp_values == vec<ll>{-4, 4, 4, 4, 4, 4}) ||
+        //     (v == 18 && k == 5 && fp_values == vec<ll>{-5, 5, 5, 5, 5, 5}) ||
+        //     (v == 20 && k == 5 && fp_values == vec<ll>{-12, 12, 12, 12, 12, 12}) ||
+        //     (v == 22 && k == 5 && fp_values == vec<ll>{-21, 21, 21, 21, 21, 21}) ||
+        //     (v == 24 && k == 5 && fp_values == vec<ll>{-44, 44, 44, 44, 44, 44}) ||
+        //     (v == 26 && k == 5 && fp_values == vec<ll>{-85, 85, 85, 85, 85, 85});
+
         if (print_cond) {
             if (output_type_ == NONE) {
                 // do nothing
