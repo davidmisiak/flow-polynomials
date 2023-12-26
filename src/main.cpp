@@ -20,8 +20,8 @@ enum SolverType {
 int main(int argc, char *argv[]) {
     std::ios::sync_with_stdio(false);
 
-    if (argc != 4) {
-        std::cerr << "Usage: " << argv[0] << " <input_type> <solver_type> <output_type>" << std::endl;
+    if (argc != 5) {
+        std::cerr << "Usage: " << argv[0] << " <input_type> <solver_type> <output_type> <agg_type>\n";
         check(false, "invalid number of arguments");
     }
 
@@ -60,11 +60,44 @@ int main(int argc, char *argv[]) {
         output_type = K5;
     } else if (strcmp(argv[3], "k6") == 0) {
         output_type = K6;
+    } else if (strcmp(argv[3], "k4ss") == 0) {
+        output_type = K4_SYM_SUMS;
+    } else if (strcmp(argv[3], "k5ss") == 0) {
+        output_type = K5_SYM_SUMS;
+    } else if (strcmp(argv[3], "k6ss") == 0) {
+        output_type = K6_SYM_SUMS;
     } else {
         check(false, "invalid output type");
     }
 
-    Output output(output_type);
+    AggType agg_type = EACH;
+    if (strcmp(argv[4], "each") == 0) {
+        agg_type = EACH;
+    } else if (strcmp(argv[4], "unique") == 0) {
+        agg_type = UNIQUE;
+    } else if (strcmp(argv[4], "counts") == 0) {
+        agg_type = COUNTS;
+    } else {
+        check(false, "invalid agg type");
+    }
+
+    const vec<OutputType> aggregable = {
+        STATS,
+        K4,
+        K5,
+        K6,
+        K4_SYM_SUMS,
+        K5_SYM_SUMS,
+        K6_SYM_SUMS,
+    };
+    if (agg_type != EACH) {
+        check(
+            std::find(aggregable.begin(), aggregable.end(), output_type) != aggregable.end(),
+            "invalid agg type for given output type"
+        );
+    }
+
+    Output output(output_type, agg_type);
     while (std::cin.peek() != EOF) {
         Multipole g;
         if (input_type == NUMERIC) {
@@ -100,5 +133,5 @@ int main(int argc, char *argv[]) {
         }
         output.process(g, fp1);
     }
-    output.summary();
+    output.finish();
 }

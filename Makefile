@@ -15,6 +15,7 @@ DN=/dev/null
 input=num
 solver=seq
 output=none
+agg=each
 res=0
 mod=1
 
@@ -39,33 +40,33 @@ build/plantri: plantri53/*
 	gcc -O3 -static -o build/plantri plantri53/plantri.c
 
 run: build/main
-	$(MAIN) $(input) $(solver) $(output)
+	$(MAIN) $(input) $(solver) $(output) $(agg)
 
 test: build/plantri build/main build/random_test build/plantri2num
 	@set -e; \
 	echo "./graphs/easy/*:"; \
 	out1=$$(cat ./graphs/easy/* | python scripts/flow_poly.py); \
-	out2=$$(cat ./graphs/easy/* | ./build/main num all fp); \
+	out2=$$(cat ./graphs/easy/* | ./build/main num all fp each); \
 	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "30 random:"; \
 	out1=$$(./build/random_test 30 | python scripts/flow_poly.py); \
-	out2=$$(./build/random_test 30 | ./build/main num all fp); \
+	out2=$$(./build/random_test 30 | ./build/main num all fp each); \
 	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "plantri v=12:"; \
 	out1=$$(./build/plantri -hc2m2dP 12d 2>$(DN) | $(P2N) | python scripts/flow_poly.py); \
-	out2=$$(./build/plantri -hc2m2dP 12d 2>$(DN) | ./build/main plantri all fp); \
+	out2=$$(./build/plantri -hc2m2dP 12d 2>$(DN) | ./build/main plantri all fp each); \
 	if [ "$$out1" != "$$out2" ]; then echo "Test failed"; exit 1; fi; \
 	echo; \
 	echo "3000 random:"; \
-	./build/random_test 3000 | $(MAIN) num all none; \
+	./build/random_test 3000 | $(MAIN) num all none each; \
 	echo; \
 	echo "plantri v=14:"; \
-	./build/plantri -hc2m2dP 14d 2>$(DN) | $(MAIN) plantri all none; \
+	./build/plantri -hc2m2dP 14d 2>$(DN) | $(MAIN) plantri all none each; \
 	echo; \
 	echo "plantri v=20 mod=1000:"; \
-	./build/plantri -hc2m2dP 20d 0/1000 2>$(DN) | $(MAIN) plantri all none
+	./build/plantri -hc2m2dP 20d 0/1000 2>$(DN) | $(MAIN) plantri all none each
 
 mods: build/plantri
 	@for mod in 1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1; do \
@@ -74,11 +75,11 @@ mods: build/plantri
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_naive: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive $(output)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri naive $(output) $(agg)
 
 # `v` is the number of inner and outer vertices (n+k)
 benchmark_seq: build/plantri build/main
-	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output)
+	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) $(agg)
 
 # `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute
 compute: build/plantri build/main
@@ -88,7 +89,7 @@ compute: build/plantri build/main
 		( \
 			failed=0; pids=""; \
 			for res in $$(seq 0 $$(($(mod)-1))); do \
-				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) >tmp/$$v-$$res & \
+				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) $(agg) >tmp/$$v-$$res & \
 				pids="$$pids $$!"; \
 			done; \
 			for pid in $$pids; do wait $$pid || failed=1; done; \
@@ -96,7 +97,7 @@ compute: build/plantri build/main
 		) \
 	done; \
 	mkdir -p computed; \
-	cat tmp/* | gzip -c >computed/$(output)-$(PLANTRI_FLAGS)-$(maxv).txt.gz; \
+	cat tmp/* | gzip -c >computed/$(agg)-$(output)-$(PLANTRI_FLAGS)-$(maxv).txt.gz; \
 	rm -r tmp
 
 save_max_star: build/plantri build/main
@@ -104,7 +105,7 @@ save_max_star: build/plantri build/main
 	read -rsn1; \
 	for v in 16 18 20 22; do \
 		for k in 3 4 5; do \
-			./build/plantri -hdP$$k $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph >graphs/max_star/$$k-$$v.txt; \
+			./build/plantri -hdP$$k $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph each >graphs/max_star/$$k-$$v.txt; \
 		done; \
 	done
 
@@ -112,5 +113,5 @@ save_k4_max_colorings: build/plantri build/main
 	@echo -n "Did you uncomment the k4 max colorings condition in output.hpp? Press any key to confirm..."; \
 	read -rsn1; \
 	for v in 16 18 20 22; do \
-		./build/plantri -hdP4 $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph >graphs/k4_max_colorings/$$v.txt; \
+		./build/plantri -hdP4 $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph each >graphs/k4_max_colorings/$$v.txt; \
 	done

@@ -13,11 +13,20 @@ enum OutputType {
     K4,
     K5,
     K6,
+    K4_SYM_SUMS,
+    K5_SYM_SUMS,
+    K6_SYM_SUMS,
+};
+
+enum AggType {
+    EACH,
+    UNIQUE,
+    COUNTS,
 };
 
 class Output {
 public:
-    Output(OutputType output_type) : output_type_(output_type) {}
+    Output(OutputType output_type, AggType agg_type) : output_type_(output_type), agg_type_(agg_type) {}
 
     void process(const Multipole& g, const FlowPoly& fp) {
         ll k = static_cast<ll>(g.get_outer_vertices().size());
@@ -93,54 +102,37 @@ public:
             } else if (output_type_ == FLOW_POLY) {
                 std::cout << fp << std::endl;
             } else if (output_type_ == STATS) {
-                std::cout << k
+                std::stringstream line;
+                line << k
                     << " " << n
                     << " " << coef_count
                     << " " << min_coef_value
                     << " " << max_coef_value
-                    << " " << star_coef_value
-                    << std::endl;
+                    << " " << star_coef_value;
+                aggregate_line(line.str());
             } else if (output_type_ == K4) {
                 if (k == 4) {
-                    vec<Partition> ps = {
-                        star,
-                        {{{-1, -2}, {-3, -4}}},
-                        {{{-2, -3}, {-4, -1}}},
-                    };
-                    print_coefs(n, fp, ps);
+                    aggregate_coefs(n, fp, get_k4_partitions());
                 }
             } else if (output_type_ == K5) {
                 if (k == 5) {
-                    vec<Partition> ps = {
-                        star,
-                        {{{-1, -2}, {-3, -4, -5}}},
-                        {{{-2, -3}, {-4, -5, -1}}},
-                        {{{-3, -4}, {-5, -1, -2}}},
-                        {{{-4, -5}, {-1, -2, -3}}},
-                        {{{-5, -1}, {-2, -3, -4}}},
-                    };
-                    print_coefs(n, fp, ps);
+                    aggregate_coefs(n, fp, get_k5_partitions());
                 }
             } else if (output_type_ == K6) {
                 if (k == 6) {
-                    vec<Partition> ps = {
-                        star,                             // a
-                        {{{-1, -2}, {-3, -4, -5, -6}}},   // b1
-                        {{{-2, -3}, {-4, -5, -6, -1}}},   // b2
-                        {{{-3, -4}, {-5, -6, -1, -2}}},   // b3
-                        {{{-4, -5}, {-6, -1, -2, -3}}},   // b4
-                        {{{-5, -6}, {-1, -2, -3, -4}}},   // b5
-                        {{{-6, -1}, {-2, -3, -4, -5}}},   // b6
-                        {{{-1, -2, -3}, {-4, -5, -6}}},   // c1
-                        {{{-2, -3, -4}, {-5, -6, -1}}},   // c2
-                        {{{-3, -4, -5}, {-6, -1, -2}}},   // c3
-                        {{{-1, -2}, {-3, -6}, {-4, -5}}}, // d1
-                        {{{-2, -3}, {-4, -1}, {-5, -6}}}, // d2
-                        {{{-3, -4}, {-5, -2}, {-6, -1}}}, // d3
-                        {{{-1, -2}, {-3, -4}, {-5, -6}}}, // e1
-                        {{{-2, -3}, {-4, -5}, {-6, -1}}}, // e2
-                    };
-                    print_coefs(n, fp, ps);
+                    aggregate_coefs(n, fp, get_k6_partitions());
+                }
+            } else if (output_type_ == K4_SYM_SUMS) {
+                if (k == 4) {
+                    aggregate_coef_sym_sums(n, fp, get_k4_partitions(), compute_k4_sym_sum);
+                }
+            } else if (output_type_ == K5_SYM_SUMS) {
+                if (k == 5) {
+                    aggregate_coef_sym_sums(n, fp, get_k5_partitions(), compute_k5_sym_sum);
+                }
+            } else if (output_type_ == K6_SYM_SUMS) {
+                if (k == 6) {
+                    aggregate_coef_sym_sums(n, fp, get_k6_partitions(), compute_k6_sym_sum);
                 }
             } else {
                 check(false);
@@ -156,7 +148,19 @@ public:
         max_star_coef_value_ = std::max(max_star_coef_value_, star_coef_value);
     }
 
-    void summary() {
+    void finish() {
+        for (const auto& [line, count] : lines_agg_) {
+            if (agg_type_ == EACH) {
+                // do nothing, already printed
+            } else if (agg_type_ == UNIQUE) {
+                std::cout << line << std::endl;
+            } else if (agg_type_ == COUNTS) {
+                std::cout << line << " " << count << std::endl;
+            } else {
+                check(false);
+            }
+        }
+
         std::cerr << "Processed " << count_ << " graphs" << std::endl;
         std::cerr << "coef counts in [" << min_coef_count_ << ", " << max_coef_count_ << "]"
             << ", coef values in [" << min_coef_value_ << ", " << max_coef_value_ << "]"
@@ -165,20 +169,118 @@ public:
     }
 
 private:
-    // prints coefficient values in the given order
-    void print_coefs(ll n, const FlowPoly& fp, const vec<Partition>& ps) {
+    void aggregate_line(const std::string& line) {
+        if (agg_type_ == EACH) {
+            std::cout << line << std::endl;
+        } else if (agg_type_ == UNIQUE || agg_type_ == COUNTS) {
+            lines_agg_[line]++;
+        } else {
+            check(false);
+        }
+    }
+
+    static vec<Partition> get_k4_partitions() {
+        return {
+            {{{-1, -2, -3, -4}}},
+            {{{-1, -2}, {-3, -4}}},
+            {{{-2, -3}, {-4, -1}}},
+        };
+    }
+
+    static vec<ll> compute_k4_sym_sum(const vec<ll>& coefs) {
+        check(coefs.size() == 3);
+        return {
+            coefs[0],
+            coefs[1] + coefs[2],
+        };
+    }
+
+    static vec<Partition> get_k5_partitions() {
+        return {
+            {{{-1, -2, -3, -4, -5}}},
+            {{{-1, -2}, {-3, -4, -5}}},
+            {{{-2, -3}, {-4, -5, -1}}},
+            {{{-3, -4}, {-5, -1, -2}}},
+            {{{-4, -5}, {-1, -2, -3}}},
+            {{{-5, -1}, {-2, -3, -4}}},
+        };
+    }
+
+    static vec<ll> compute_k5_sym_sum(const vec<ll>& coefs) {
+        check(coefs.size() == 6);
+        return {
+            coefs[0],
+            coefs[1] + coefs[2] + coefs[3] + coefs[4] + coefs[5],
+        };
+    }
+
+    static vec<Partition> get_k6_partitions() {
+        return {
+            {{{-1, -2, -3, -4, -5, -6}}},     // a
+            {{{-1, -2}, {-3, -4, -5, -6}}},   // b1
+            {{{-2, -3}, {-4, -5, -6, -1}}},   // b2
+            {{{-3, -4}, {-5, -6, -1, -2}}},   // b3
+            {{{-4, -5}, {-6, -1, -2, -3}}},   // b4
+            {{{-5, -6}, {-1, -2, -3, -4}}},   // b5
+            {{{-6, -1}, {-2, -3, -4, -5}}},   // b6
+            {{{-1, -2, -3}, {-4, -5, -6}}},   // c1
+            {{{-2, -3, -4}, {-5, -6, -1}}},   // c2
+            {{{-3, -4, -5}, {-6, -1, -2}}},   // c3
+            {{{-1, -2}, {-3, -6}, {-4, -5}}}, // d1
+            {{{-2, -3}, {-4, -1}, {-5, -6}}}, // d2
+            {{{-3, -4}, {-5, -2}, {-6, -1}}}, // d3
+            {{{-1, -2}, {-3, -4}, {-5, -6}}}, // e1
+            {{{-2, -3}, {-4, -5}, {-6, -1}}}, // e2
+        };
+    }
+
+    static vec<ll> compute_k6_sym_sum(const vec<ll>& coefs) {
+        check(coefs.size() == 15);
+        return {
+            coefs[0],
+            coefs[1] + coefs[2] + coefs[3] + coefs[4] + coefs[5] + coefs[6],
+            coefs[7] + coefs[8] + coefs[9],
+            coefs[10] + coefs[11] + coefs[12],
+            coefs[13] + coefs[14],
+        };
+    }
+
+    // return coefficient values for the given k
+    vec<ll> get_coefs(const FlowPoly& fp, const vec<Partition>& ps) {
         for (const auto& [p, _] : fp) {
             check(std::find(ps.begin(), ps.end(), p) != ps.end(), "nonplanar coef");
         }
-        std::cout << n;
+        vec<ll> coefs;
         for (const auto& p : ps) {
             ll coef_value = fp.contains(p) ? fp.at(p) : 0;
-            std::cout << " " << coef_value;
+            coefs.push_back(coef_value);
         }
-        std::cout << std::endl;
+        return coefs;
+    }
+
+    void aggregate_coefs(ll n, const FlowPoly& fp, const vec<Partition>& ps) {
+        vec<ll> coefs = get_coefs(fp, ps);
+        std::stringstream line;
+        line << n;
+        for (ll coef : coefs) {
+            line << " " << coef;
+        }
+        aggregate_line(line.str());
+    }
+
+    void aggregate_coef_sym_sums(ll n, const FlowPoly& fp, const vec<Partition>& ps, vec<ll> (*compute_sym_sum)(const vec<ll>&)) {
+        vec<ll> coefs = get_coefs(fp, ps);
+        vec<ll> sym_sums = compute_sym_sum(coefs);
+        std::stringstream line;
+        line << n;
+        for (ll sym_sum : sym_sums) {
+            line << " " << sym_sum;
+        }
+        aggregate_line(line.str());
     }
 
     OutputType output_type_;
+    AggType agg_type_;
     ll count_ = 0;
     ll min_coef_count_ = INT64_MAX;
     ll max_coef_count_ = INT64_MIN;
@@ -186,4 +288,5 @@ private:
     ll max_coef_value_ = INT64_MIN;
     ll min_star_coef_value_ = INT64_MAX;
     ll max_star_coef_value_ = INT64_MIN;
+    std::map<std::string, ll> lines_agg_;
 };
