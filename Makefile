@@ -19,7 +19,7 @@ agg=each
 res=0
 mod=1
 
-.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings
+.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings recompress_unique
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -114,4 +114,11 @@ save_k4_max_colorings: build/plantri build/main
 	read -rsn1; \
 	for v in 16 18 20 22; do \
 		./build/plantri -hdP4 $$(($$v-2))d 2>$(DN) | $(MAIN) plantri seq graph each >graphs/k4_max_colorings/$$v.txt; \
+	done
+
+recompress_unique:
+	@for file in computed/unique-*; do \
+		gzip -cd $$file >tmp.txt; \
+		cat tmp.txt | sort | uniq | gzip -c >$$file; \
+		rm tmp.txt; \
 	done
