@@ -60,12 +60,16 @@ int main(int argc, char *argv[]) {
         output_type = K5;
     } else if (strcmp(argv[3], "k6") == 0) {
         output_type = K6;
+    } else if (strcmp(argv[3], "k7") == 0) {
+        output_type = K7;
     } else if (strcmp(argv[3], "k4ss") == 0) {
         output_type = K4_SYM_SUMS;
     } else if (strcmp(argv[3], "k5ss") == 0) {
         output_type = K5_SYM_SUMS;
     } else if (strcmp(argv[3], "k6ss") == 0) {
         output_type = K6_SYM_SUMS;
+    } else if (strcmp(argv[3], "k7ss") == 0) {
+        output_type = K7_SYM_SUMS;
     } else {
         check(false, "invalid output type");
     }
@@ -86,9 +90,11 @@ int main(int argc, char *argv[]) {
         K4,
         K5,
         K6,
+        K7,
         K4_SYM_SUMS,
         K5_SYM_SUMS,
         K6_SYM_SUMS,
+        K7_SYM_SUMS,
     };
     if (agg_type != EACH) {
         check(

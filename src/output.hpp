@@ -13,9 +13,11 @@ enum OutputType {
     K4,
     K5,
     K6,
+    K7,
     K4_SYM_SUMS,
     K5_SYM_SUMS,
     K6_SYM_SUMS,
+    K7_SYM_SUMS,
 };
 
 enum AggType {
@@ -122,6 +124,10 @@ public:
                 if (k == 6) {
                     aggregate_coefs(n, fp, get_k6_partitions());
                 }
+            } else if (output_type_ == K7) {
+                if (k == 7) {
+                    aggregate_coefs(n, fp, get_k7_partitions());
+                }
             } else if (output_type_ == K4_SYM_SUMS) {
                 if (k == 4) {
                     aggregate_coef_sym_sums(n, fp, get_k4_partitions(), compute_k4_sym_sum);
@@ -133,6 +139,10 @@ public:
             } else if (output_type_ == K6_SYM_SUMS) {
                 if (k == 6) {
                     aggregate_coef_sym_sums(n, fp, get_k6_partitions(), compute_k6_sym_sum);
+                }
+            } else if (output_type_ == K7_SYM_SUMS) {
+                if (k == 7) {
+                    aggregate_coef_sym_sums(n, fp, get_k7_partitions(), compute_k7_sym_sum);
                 }
             } else {
                 check(false);
@@ -242,6 +252,59 @@ private:
             coefs[7] + coefs[8] + coefs[9],
             coefs[10] + coefs[11] + coefs[12],
             coefs[13] + coefs[14],
+        };
+    }
+
+    static vec<Partition> get_k7_partitions() {
+        return {
+            {{{-1, -2, -3, -4, -5, -6, -7}}},     // a
+            {{{-1, -2}, {-3, -4, -5, -6, -7}}},   // b1
+            {{{-2, -3}, {-4, -5, -6, -7, -1}}},   // b2
+            {{{-3, -4}, {-5, -6, -7, -1, -2}}},   // b3
+            {{{-4, -5}, {-6, -7, -1, -2, -3}}},   // b4
+            {{{-5, -6}, {-7, -1, -2, -3, -4}}},   // b5
+            {{{-6, -7}, {-1, -2, -3, -4, -5}}},   // b6
+            {{{-7, -1}, {-2, -3, -4, -5, -6}}},   // b7
+            {{{-1, -2, -3}, {-4, -5, -6, -7}}},   // c1
+            {{{-2, -3, -4}, {-5, -6, -7, -1}}},   // c2
+            {{{-3, -4, -5}, {-6, -7, -1, -2}}},   // c3
+            {{{-4, -5, -6}, {-7, -1, -2, -3}}},   // c4
+            {{{-5, -6, -7}, {-1, -2, -3, -4}}},   // c5
+            {{{-6, -7, -1}, {-2, -3, -4, -5}}},   // c6
+            {{{-7, -1, -2}, {-3, -4, -5, -6}}},   // c7
+            {{{-1, -2}, {-3, -4}, {-5, -6, -7}}}, // d1
+            {{{-2, -3}, {-4, -5}, {-6, -7, -1}}}, // d2
+            {{{-3, -4}, {-5, -6}, {-7, -1, -2}}}, // d3
+            {{{-4, -5}, {-6, -7}, {-1, -2, -3}}}, // d4
+            {{{-5, -6}, {-7, -1}, {-2, -3, -4}}}, // d5
+            {{{-6, -7}, {-1, -2}, {-3, -4, -5}}}, // d6
+            {{{-7, -1}, {-2, -3}, {-4, -5, -6}}}, // d7
+            {{{-1, -2}, {-3, -7}, {-4, -5, -6}}}, // e1
+            {{{-2, -3}, {-4, -1}, {-5, -6, -7}}}, // e2
+            {{{-3, -4}, {-5, -2}, {-6, -7, -1}}}, // e3
+            {{{-4, -5}, {-6, -3}, {-7, -1, -2}}}, // e4
+            {{{-5, -6}, {-7, -4}, {-1, -2, -3}}}, // e5
+            {{{-6, -7}, {-1, -5}, {-2, -3, -4}}}, // e6
+            {{{-7, -1}, {-2, -6}, {-3, -4, -5}}}, // e7
+            {{{-1, -2}, {-4, -5}, {-3, -6, -7}}}, // f1
+            {{{-2, -3}, {-5, -6}, {-4, -7, -1}}}, // f2
+            {{{-3, -4}, {-6, -7}, {-5, -1, -2}}}, // f3
+            {{{-4, -5}, {-7, -1}, {-6, -2, -3}}}, // f4
+            {{{-5, -6}, {-1, -2}, {-7, -3, -4}}}, // f5
+            {{{-6, -7}, {-2, -3}, {-1, -4, -5}}}, // f6
+            {{{-7, -1}, {-3, -4}, {-2, -5, -6}}}, // f7
+        };
+    }
+
+    static vec<ll> compute_k7_sym_sum(const vec<ll>& coefs) {
+        check(coefs.size() == 36);
+        return {
+            coefs[0],
+            coefs[1] + coefs[2] + coefs[3] + coefs[4] + coefs[5] + coefs[6] + coefs[7],
+            coefs[8] + coefs[9] + coefs[10] + coefs[11] + coefs[12] + coefs[13] + coefs[14],
+            coefs[15] + coefs[16] + coefs[17] + coefs[18] + coefs[19] + coefs[20] + coefs[21],
+            coefs[22] + coefs[23] + coefs[24] + coefs[25] + coefs[26] + coefs[27] + coefs[28],
+            coefs[29] + coefs[30] + coefs[31] + coefs[32] + coefs[33] + coefs[34] + coefs[35],
         };
     }
 
