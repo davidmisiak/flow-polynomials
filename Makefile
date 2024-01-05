@@ -82,14 +82,16 @@ benchmark_seq: build/plantri build/main
 	@$(PLANTRI) $$(($(v)-2))d $(res)/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) $(agg)
 
 # `maxv` is the maximum number of inner and outer vertices (n+k) up to which to compute
+# `mod` is the real modulus used by plantri
+# `threads` is the number of CPUs to use
 compute: build/plantri build/main
-	@set -e; \
+	set -e; \
 	mkdir tmp; \
 	for v in $$(seq 4 2 $(maxv)); do \
 		( \
 			failed=0; pids=""; \
-			for res in $$(seq 0 $$(($(mod)-1))); do \
-				$(PLANTRI) $$(($$v-2))d $$res/$(mod) 2>$(DN) | $(MAIN) plantri seq $(output) $(agg) >tmp/$$v-$$res & \
+			for res in $$(seq 0 $$(($(threads)-1))); do \
+				$(PLANTRI) $$(($$v-2))d $$res/$$(($(threads)*$(mod))) 2>$(DN) | $(MAIN) plantri seq $(output) $(agg) >tmp/$$v-$$res & \
 				pids="$$pids $$!"; \
 			done; \
 			for pid in $$pids; do wait $$pid || failed=1; done; \
@@ -97,7 +99,7 @@ compute: build/plantri build/main
 		) \
 	done; \
 	mkdir -p computed; \
-	cat tmp/* | gzip -c >computed/$(agg)-$(output)-$(PLANTRI_FLAGS)-$(maxv).txt.gz; \
+	cat tmp/* | gzip -c >computed/$(agg)-$(output)-$(PLANTRI_FLAGS)-$(maxv)-$(mod).txt.gz; \
 	rm -r tmp
 
 save_max_star: build/plantri build/main
