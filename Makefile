@@ -85,7 +85,7 @@ benchmark_seq: build/plantri build/main
 # `mod` is the real modulus used by plantri
 # `threads` is the number of CPUs to use
 compute: build/plantri build/main
-	set -e; \
+	@set -e; \
 	mkdir tmp; \
 	for v in $$(seq 4 2 $(maxv)); do \
 		( \
