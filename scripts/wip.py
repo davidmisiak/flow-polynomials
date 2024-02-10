@@ -307,6 +307,6 @@ targets = [
     # [7, 4, 2, 2, 2, 1],
 ]
 
-for target in targets:
-    result = find_lin_comb(vectors, target)
-    print(result.success, result.x)
+# for target in targets:
+#     result = find_lin_comb(vectors, target)
+#     print(result.success, result.x)
