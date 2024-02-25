@@ -8,7 +8,8 @@ C++:
 - `gcc`
 - `Boost`
 
-Python scripts:
+Scripts:
 
 - [NetworkX](https://networkx.org/)
 - [Matplotlib](https://matplotlib.org/)
+- [SageMath](https://www.sagemath.org/)
