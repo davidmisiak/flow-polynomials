@@ -124,3 +124,10 @@ recompress_unique:
 		cat tmp.txt | sort | uniq | gzip -c >$$file; \
 		rm tmp.txt; \
 	done
+
+recompress_counts:
+	@for file in computed/counts-*; do \
+		gzip -cd $$file >tmp.txt; \
+		python scripts/recompress_counts.py tmp.txt | gzip -c >$$file; \
+		rm tmp.txt; \
+	done
