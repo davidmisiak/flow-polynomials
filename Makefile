@@ -19,7 +19,7 @@ agg=each
 res=0
 mod=1
 
-.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings recompress_unique
+.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings recompress_unique recompress_counts analysis
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
@@ -131,3 +131,6 @@ recompress_counts:
 		python scripts/recompress_counts.py tmp.txt | gzip -c >$$file; \
 		rm tmp.txt; \
 	done
+
+analysis:
+	jupyter nbconvert --execute --to html analysis.ipynb
