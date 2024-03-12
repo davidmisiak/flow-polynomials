@@ -41,10 +41,10 @@ for k in range(2, 20):
     colorings = list(get_colorings(k))
     print(datetime.datetime.now(), f'colorings = {len(colorings)}')
 
-    M = matrix(ZZ, len(partitions), len(colorings))
-    for i, p in enumerate(partitions):
-        for j, cs in enumerate(colorings):
+    M = matrix(ZZ, len(colorings), len(partitions))
+    for i, cs in enumerate(colorings):
+        for j, p in enumerate(partitions):
             M[i, j] = is_compatible(p, cs)
     print(datetime.datetime.now(), '(constructed)')
-    rank = M.T.rank()
+    rank = M.rank()
     print(datetime.datetime.now(), rank == len(partitions))
