@@ -8727,8 +8727,9 @@ star coefficient = the coeffcient with all outer vertices connected</p>
 
 <span class="k">def</span> <span class="nf">prepare_points</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">sym</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">32</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">load_kss</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'computed/counts-k</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">ss-</span><span class="si">{</span><span class="n">flags</span><span class="si">}</span><span class="s1">dP</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">-32-1.txt.gz'</span><span class="p">)</span>
+        <span class="n">v_to_load</span> <span class="o">=</span> <span class="mi">32</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">4</span> <span class="k">else</span> <span class="mi">34</span>
+        <span class="k">assert</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">v_to_load</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">load_kss</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'computed/counts-k</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">ss-</span><span class="si">{</span><span class="n">flags</span><span class="si">}</span><span class="s1">dP</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">v_to_load</span><span class="si">}</span><span class="s1">-1.txt.gz'</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">30</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">load_k</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'computed/counts-k</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">flags</span><span class="si">}</span><span class="s1">dP</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">-30-1.txt.gz'</span><span class="p">)</span>
@@ -8917,7 +8918,7 @@ star coefficient = the coeffcient with all outer vertices connected</p>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">get_integer_zero_offset_planes</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">get_integer_zero_offset_planes</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">32</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">get_integer_zero_offset_planes</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">34</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -9112,7 +9113,7 @@ star coefficient = the coeffcient with all outer vertices connected</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">get_integer_zero_offset_planes</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">32</span><span class="p">))</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">get_integer_zero_offset_planes</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">34</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -9233,11 +9234,11 @@ star coefficient = the coeffcient with all outer vertices connected</p>
 </tr>
 <tr>
 <th>10</th>
-<td>369</td>
-<td>30</td>
-<td>300</td>
-<td>-1</td>
-<td>11</td>
+<td>251</td>
+<td>124</td>
+<td>1</td>
+<td>-2</td>
+<td>82</td>
 </tr>
 </tbody>
 </table>
