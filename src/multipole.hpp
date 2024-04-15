@@ -219,6 +219,7 @@ public:
     }
 
     // Returns the number of distinct neighbors of an inner vertex.
+    // All outer neighbors of the vertex are counted as a single distinct neighbor.
     pair<ll, ll> get_inner_vertex_distinct_neighbor_count(vertex_t u) const {
         check(u >= 0, "u is outer vertex");
         ll outer_count = outer_edges_.contains(u);
