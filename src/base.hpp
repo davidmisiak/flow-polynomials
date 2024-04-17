@@ -23,7 +23,7 @@ using adjacency_t = std::map<vertex_t, vertex_mset_t>;
 using partition_t = boost::container::flat_set<vertex_set_t>;
 
 // constants:
-constexpr ll MAX_VERTEX = 60;
+constexpr ll MAX_VERTEX = 60; // safety precaution because of contraction_mask in SequentialSolver
 constexpr bool PRUNE_CONTINUOUSLY = true;
 
 
