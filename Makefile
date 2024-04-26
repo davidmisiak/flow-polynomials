@@ -134,3 +134,6 @@ recompress_counts:
 
 analysis:
 	jupyter nbconvert --execute --to html analysis.ipynb
+
+plot:
+	python -m scripts.plot
