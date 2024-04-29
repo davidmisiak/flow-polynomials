@@ -19,7 +19,7 @@ agg=each
 res=0
 mod=1
 
-.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings recompress_unique recompress_counts analysis
+.PHONY: clean run test mods benchmark_naive benchmark_seq compute save_max_star save_k4_max_colorings recompress_unique recompress_counts analysis plot
 
 clean:
 	find build/ -type f ! -name '.gitignore' -delete
