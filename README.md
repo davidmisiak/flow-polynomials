@@ -21,7 +21,17 @@ Analysis notebook:
 ## Usage Examples
 
 ```bash
-make test
-make run output=fp < graphs/easy/4-square
-make plot < graphs/easy/4-square
+❯ make test
+```
+
+```bash
+❯ make plot < graphs/easy/4-square
+```
+
+```bash
+❯ make run output=fp < graphs/easy/4-square
+[
+   1 * [ -4 -3 ][ -2 -1 ]
+   1 * [ -4 -1 ][ -3 -2 ]
+]
 ```
