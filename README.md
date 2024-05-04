@@ -1,4 +1,4 @@
-# Flow Polynomials
+# Multipole Flow Polynomials
 
 ## Dependencies
 
